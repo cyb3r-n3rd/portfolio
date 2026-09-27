@@ -2,23 +2,20 @@
 // No image files, no third-party textures.
 import * as THREE from 'three';
 
-export const FONT_SANS = '"Arial Black", "Helvetica Neue", Helvetica, Arial, sans-serif';
-export const FONT_MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", monospace';
+export const FONT_UI = '"Quicksand", system-ui, sans-serif';
+export const FONT_PIXEL = '"Press Start 2P", ui-monospace, monospace';
+export const FONT_MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
 
-function mix(a, b, t) {
-  return '#' + new THREE.Color(a).lerp(new THREE.Color(b), t).getHexString();
-}
-
-function canvas(w, h) {
+export function canvas(w, h) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   return [c, c.getContext('2d')];
 }
 
-function toTexture(c, { srgb = true, repeat } = {}) {
+export function toTexture(c, { srgb = true, repeat } = {}) {
   const t = new THREE.CanvasTexture(c);
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
+  t.anisotropy = 8;
   if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat); }
   return t;
 }
@@ -33,264 +30,375 @@ export function rng(seed = 1) {
   };
 }
 
-/** Glowing text on transparent background. Used additively on dark boards. */
-export function neonText(text, color, { w = 1024, h = 256, size = 150, font = FONT_SANS, weight = 900, outline = null } = {}) {
-  const [c, ctx] = canvas(w, h);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = `${weight} ${size}px ${font}`;
-  // Shrink to fit.
-  const maxW = w * (outline ? .74 : .9);
-  const measured = ctx.measureText(text).width;
-  if (measured > maxW) ctx.font = `${weight} ${Math.floor(size * maxW / measured)}px ${font}`;
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+}
 
-  const cx = outline === 'arrow-left' ? w * .54 : outline === 'arrow-right' ? w * .46 : w / 2;
-  const draw = (fn) => {
-    // Wide soft glow, tighter glow, then a near-white core, like a real tube.
-    const core = mix(color, '#ffffff', .55);
-    for (const [blur, col, lw] of [[44, color, 9], [16, color, 6], [3, core, 2.5]]) {
-      ctx.shadowColor = color; ctx.shadowBlur = blur;
-      ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = lw;
-      fn(col === core);
-    }
-  };
-  draw((core) => {
-    ctx.globalAlpha = core ? .75 : 1;
-    ctx.fillText(text, cx, h / 2 + size * .04);
-  });
-  if (outline) {
-    ctx.lineJoin = 'round';
-    const p = 22, tip = h * .42;
-    draw((core) => {
-      ctx.globalAlpha = core ? .75 : 1;
-      ctx.beginPath();
-      if (outline === 'arrow-right') {
-        ctx.moveTo(p, p); ctx.lineTo(w - tip, p); ctx.lineTo(w - p, h / 2); ctx.lineTo(w - tip, h - p); ctx.lineTo(p, h - p);
-      } else {
-        ctx.moveTo(w - p, p); ctx.lineTo(tip, p); ctx.lineTo(p, h / 2); ctx.lineTo(tip, h - p); ctx.lineTo(w - p, h - p);
-      }
-      ctx.closePath(); ctx.stroke();
-    });
+function fitFont(ctx, text, weight, size, family, maxW) {
+  ctx.font = `${weight} ${size}px ${family}`;
+  const m = ctx.measureText(text).width;
+  if (m > maxW) ctx.font = `${weight} ${Math.floor(size * maxW / m)}px ${family}`;
+}
+
+/** Solid colored arrow sign for the signpost. */
+export function arrowSign(text, color, dir) {
+  const W = 1024, H = 256;
+  const [c, ctx] = canvas(W, H);
+  const tip = 96, pad = 10;
+  ctx.beginPath();
+  if (dir === 'right') {
+    ctx.moveTo(pad + 24, pad); ctx.lineTo(W - tip, pad); ctx.lineTo(W - pad, H / 2); ctx.lineTo(W - tip, H - pad); ctx.lineTo(pad + 24, H - pad);
+    ctx.quadraticCurveTo(pad, H - pad, pad, H - pad - 24); ctx.lineTo(pad, pad + 24); ctx.quadraticCurveTo(pad, pad, pad + 24, pad);
+  } else {
+    ctx.moveTo(W - pad - 24, pad); ctx.lineTo(tip, pad); ctx.lineTo(pad, H / 2); ctx.lineTo(tip, H - pad); ctx.lineTo(W - pad - 24, H - pad);
+    ctx.quadraticCurveTo(W - pad, H - pad, W - pad, H - pad - 24); ctx.lineTo(W - pad, pad + 24); ctx.quadraticCurveTo(W - pad, pad, W - pad - 24, pad);
   }
-  ctx.globalAlpha = 1;
+  ctx.closePath();
+  ctx.fillStyle = color; ctx.fill();
+  ctx.lineWidth = 14; ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.stroke();
+  ctx.save(); ctx.clip();
+  ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(0, 0, W, H * .42);
+  ctx.restore();
+  ctx.fillStyle = '#16122b';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  fitFont(ctx, text, 700, 118, FONT_UI, W - tip - 120);
+  ctx.fillText(text, dir === 'right' ? (W - tip) / 2 + 20 : (W + tip) / 2 - 20, H / 2 + 6);
+  return toTexture(c);
+}
+
+/** The shop's name board: small line over a big handle, with a bulb border. */
+export function shopSign(top, main) {
+  const W = 2048, H = 512;
+  const [c, ctx] = canvas(W, H);
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#1b1440'); g.addColorStop(1, '#0d0a22');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#ffd35a';
+  const dot = (x, y) => { ctx.shadowColor = '#ffb020'; ctx.shadowBlur = 18; ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fill(); };
+  for (let x = 30; x < W; x += 60) { dot(x, 26); dot(x, H - 26); }
+  for (let y = 86; y < H - 60; y += 60) { dot(26, y); dot(W - 26, y); }
+  ctx.shadowBlur = 0;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#2af3ff'; ctx.shadowColor = '#2af3ff'; ctx.shadowBlur = 24;
+  ctx.font = `700 92px ${FONT_UI}`;
+  ctx.fillText(top, W / 2, 128);
+  const grad = ctx.createLinearGradient(0, 240, 0, 400);
+  grad.addColorStop(0, '#ffe9f6'); grad.addColorStop(.5, '#ff4fa3'); grad.addColorStop(1, '#d4238a');
+  ctx.fillStyle = grad; ctx.shadowColor = '#ff4fa3'; ctx.shadowBlur = 40;
+  fitFont(ctx, main, 400, 150, FONT_PIXEL, W - 220);
+  ctx.fillText(main, W / 2, 330);
+  return toTexture(c);
+}
+
+/** A plain label (vending machine header, arcade marquee...). */
+export function label(text, { w = 1024, h = 256, bg = '#111', fg = '#fff', glow = null, font = FONT_PIXEL, size = 90, weight = 400 } = {}) {
+  const [c, ctx] = canvas(w, h);
+  if (bg) { ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h); }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (glow) { ctx.shadowColor = glow; ctx.shadowBlur = 28; }
+  ctx.fillStyle = fg;
+  fitFont(ctx, text, weight, size, font, w * .88);
+  ctx.fillText(text, w / 2, h / 2 + 4);
   return toTexture(c);
 }
 
 /** Striped awning fabric with a scalloped hem (alpha). */
-export function awning() {
+export function awning(a = '#19b3ad', b = '#e9fbff') {
   const [c, ctx] = canvas(1024, 256);
-  const stripes = 12, sw = c.width / stripes;
+  const stripes = 10, sw = c.width / stripes;
   for (let i = 0; i < stripes; i++) {
-    ctx.fillStyle = i % 2 ? '#1a0f2b' : '#7a1460';
+    ctx.fillStyle = i % 2 ? b : a;
     ctx.fillRect(i * sw, 0, sw, c.height);
   }
-  // Fabric grime.
-  const r = rng(7);
-  for (let i = 0; i < 2500; i++) {
-    ctx.fillStyle = `rgba(0,0,0,${r() * .12})`;
-    ctx.fillRect(r() * c.width, r() * c.height, 2 + r() * 6, 1 + r() * 3);
-  }
+  const g = ctx.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, 'rgba(0,0,0,.25)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 1024, 256);
   const map = toTexture(c);
-  // Scalloped hem as an alpha map.
-  const [a, actx] = canvas(1024, 256);
+  const [al, actx] = canvas(1024, 256);
   actx.fillStyle = '#fff';
-  actx.fillRect(0, 0, a.width, a.height - 40);
+  actx.fillRect(0, 0, al.width, al.height - 50);
   for (let i = 0; i < stripes; i++) {
-    actx.beginPath();
-    actx.arc(i * sw + sw / 2, a.height - 40, sw / 2, 0, Math.PI);
-    actx.fill();
+    actx.beginPath(); actx.arc(i * sw + sw / 2, al.height - 50, sw / 2, 0, Math.PI); actx.fill();
   }
-  return { map, alphaMap: toTexture(a, { srgb: false }) };
+  return { map, alphaMap: toTexture(al, { srgb: false }) };
 }
 
-/** Painted sheet metal with rivets, stickers and wear. */
-export function panel(base = '#1b1e29', seed = 3, { stickers = true } = {}) {
-  const [c, ctx] = canvas(1024, 512);
-  ctx.fillStyle = base; ctx.fillRect(0, 0, c.width, c.height);
+/** Wooden planks. */
+export function planks(base = '#b86a3c', seed = 2) {
+  const [c, ctx] = canvas(512, 512);
   const r = rng(seed);
-  // Vertical seams
-  for (let x = 0; x < c.width; x += 128) {
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x, 0, 3, c.height);
-    ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fillRect(x + 3, 0, 2, c.height);
-    for (let y = 20; y < c.height; y += 60) {
-      ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.beginPath(); ctx.arc(x + 12, y, 3, 0, 7); ctx.fill();
-    }
-  }
-  // Scratches and grime
-  for (let i = 0; i < 900; i++) {
-    ctx.strokeStyle = `rgba(${r() > .5 ? '255,255,255' : '0,0,0'},${r() * .08})`;
-    ctx.lineWidth = r() * 2;
-    const x = r() * c.width, y = r() * c.height;
-    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + (r() - .5) * 40, y + (r() - .5) * 8); ctx.stroke();
-  }
-  const g = ctx.createLinearGradient(0, c.height * .6, 0, c.height);
-  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.45)');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
-
-  if (stickers) {
-    const labels = ['0xDEADBEEF', 'rm -rf /fear', 'NO PWN NO FUN', '</>', 'sudo make me a sandwich', '127.0.0.1', 'CTF', '#!'];
-    const colors = ['#2af3ff', '#ff2bd6', '#b6ff3b', '#ffb020', '#e9ecf5'];
-    for (let i = 0; i < 7; i++) {
-      const text = labels[i];
-      ctx.save();
-      ctx.translate(80 + r() * (c.width - 200), 60 + r() * (c.height - 160));
-      ctx.rotate((r() - .5) * .4);
-      ctx.font = `bold ${22 + r() * 10 | 0}px ${FONT_MONO}`;
-      const tw = ctx.measureText(text).width + 24;
-      const col = colors[i % colors.length];
-      ctx.fillStyle = col; ctx.globalAlpha = .85;
-      ctx.fillRect(-tw / 2, -20, tw, 40);
-      ctx.globalAlpha = 1; ctx.fillStyle = '#0b0c12'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(text, 0, 1);
-      ctx.restore();
+  const n = 8, h = 512 / n;
+  for (let i = 0; i < n; i++) {
+    const col = new THREE.Color(base).offsetHSL(0, 0, (r() - .5) * .06);
+    ctx.fillStyle = '#' + col.getHexString();
+    ctx.fillRect(0, i * h, 512, h);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(0, i * h, 512, 3);
+    ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fillRect(0, i * h + 3, 512, 2);
+    for (let k = 0; k < 14; k++) {
+      ctx.strokeStyle = `rgba(60,25,10,${r() * .15})`; ctx.lineWidth = 1 + r() * 2;
+      const y = i * h + 6 + r() * (h - 12);
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.bezierCurveTo(170, y + (r() - .5) * 8, 340, y + (r() - .5) * 8, 512, y); ctx.stroke();
     }
   }
   return toTexture(c);
 }
 
-/** Menu board: chalk-ish list of "dishes". */
+/** Painted wall with panel seams and a few stickers. */
+export function wall(base = '#3a2f6e', seed = 3, stickers = true) {
+  const [c, ctx] = canvas(1024, 1024);
+  ctx.fillStyle = base; ctx.fillRect(0, 0, 1024, 1024);
+  const r = rng(seed);
+  for (let x = 0; x < 1024; x += 256) {
+    ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.fillRect(x, 0, 4, 1024);
+    ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x + 4, 0, 3, 1024);
+  }
+  for (let i = 0; i < 500; i++) {
+    ctx.fillStyle = `rgba(0,0,0,${r() * .06})`;
+    ctx.fillRect(r() * 1024, r() * 1024, 4 + r() * 30, 2 + r() * 10);
+  }
+  const g = ctx.createLinearGradient(0, 700, 0, 1024);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.3)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 1024, 1024);
+  if (stickers) {
+    const labels = ['0xDEADBEEF', 'NO PWN NO FUN', '</>', '127.0.0.1', 'CTF', 'sudo !!', 'rm -rf /fear'];
+    const colors = ['#2af3ff', '#ff4fa3', '#b6ff3b', '#ffb020', '#ffffff'];
+    labels.forEach((text, i) => {
+      ctx.save();
+      ctx.translate(90 + r() * 840, 120 + r() * 780);
+      ctx.rotate((r() - .5) * .5);
+      ctx.font = `700 ${30 + r() * 12 | 0}px ${FONT_MONO}`;
+      const tw = ctx.measureText(text).width + 30;
+      ctx.fillStyle = colors[i % colors.length];
+      roundRect(ctx, -tw / 2, -26, tw, 52, 10); ctx.fill();
+      ctx.fillStyle = '#15112a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(text, 0, 2);
+      ctx.restore();
+    });
+  }
+  return toTexture(c);
+}
+
+/** Graffiti mural for the back wall: circuit traces and a big tag. */
+export function mural(tag) {
+  const [c, ctx] = canvas(1024, 1024);
+  const g = ctx.createLinearGradient(0, 0, 1024, 1024);
+  g.addColorStop(0, '#2b1f5c'); g.addColorStop(1, '#1a3a6b');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 1024, 1024);
+  const r = rng(31);
+  ctx.lineWidth = 6; ctx.lineCap = 'round';
+  for (let i = 0; i < 26; i++) {
+    ctx.strokeStyle = ['#2af3ff', '#b6ff3b', '#ff4fa3'][i % 3];
+    ctx.globalAlpha = .35;
+    let x = r() * 1024, y = r() * 1024;
+    ctx.beginPath(); ctx.moveTo(x, y);
+    for (let k = 0; k < 4; k++) {
+      if (k % 2) y += (r() - .5) * 400; else x += (r() - .5) * 400;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = .7; ctx.fillStyle = ctx.strokeStyle;
+    ctx.beginPath(); ctx.arc(x, y, 12, 0, 7); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.save();
+  ctx.translate(460, 360); ctx.rotate(-.12);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = `700 150px ${FONT_UI}`;
+  const t2 = tag.replace('_', ' ');
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 34; ctx.strokeStyle = '#16122b'; ctx.strokeText(t2, 0, 0);
+  ctx.lineWidth = 16; ctx.strokeStyle = '#ffffff'; ctx.strokeText(t2, 0, 0);
+  const tg = ctx.createLinearGradient(0, -80, 0, 80);
+  tg.addColorStop(0, '#ffe066'); tg.addColorStop(.5, '#ff4fa3'); tg.addColorStop(1, '#8a7bff');
+  ctx.fillStyle = tg; ctx.fillText(t2, 0, 0);
+  ctx.restore();
+  // drips
+  for (let i = 0; i < 14; i++) {
+    ctx.fillStyle = ['#ff4fa3', '#ffe066', '#8a7bff'][i % 3];
+    const x = 160 + r() * 620, y = 420 + r() * 40, h = 40 + r() * 140;
+    ctx.fillRect(x, y, 8, h); ctx.beginPath(); ctx.arc(x + 4, y + h, 7, 0, 7); ctx.fill();
+  }
+  return toTexture(c);
+}
+
+/** Back panel for machines: vent slots and a service sticker. */
+export function backPanel(base = '#123c3c', seed = 4) {
+  const [c, ctx] = canvas(256, 640);
+  ctx.fillStyle = base; ctx.fillRect(0, 0, 256, 640);
+  ctx.fillStyle = 'rgba(0,0,0,.45)';
+  for (let y = 60; y < 300; y += 26) { roundRect(ctx, 40, y, 176, 10, 5); ctx.fill(); }
+  ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fillRect(16, 16, 224, 2); ctx.fillRect(16, 622, 224, 2);
+  const r = rng(seed);
+  ctx.save(); ctx.translate(128, 420); ctx.rotate((r() - .5) * .3);
+  ctx.fillStyle = '#ffd35a'; roundRect(ctx, -80, -40, 160, 80, 8); ctx.fill();
+  ctx.fillStyle = '#16122b'; ctx.textAlign = 'center'; ctx.font = `700 22px ${FONT_MONO}`;
+  ctx.fillText('DO NOT', 0, -6); ctx.fillText('JAILBREAK', 0, 22);
+  ctx.restore();
+  return toTexture(c);
+}
+
+/** Chalkboard menu. */
 export function menuBoard() {
   const [c, ctx] = canvas(512, 768);
-  ctx.fillStyle = '#0c0f10'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#1c2422'; ctx.fillRect(0, 0, c.width, c.height);
   const r = rng(11);
-  for (let i = 0; i < 4000; i++) { ctx.fillStyle = `rgba(255,255,255,${r() * .03})`; ctx.fillRect(r() * 512, r() * 768, 2, 2); }
-  ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 4; ctx.strokeRect(16, 16, 480, 736);
-  ctx.textAlign = 'center'; ctx.fillStyle = '#ffb020';
-  ctx.font = `900 64px ${FONT_SANS}`; ctx.fillText('MENU', 256, 100);
-  ctx.textAlign = 'left'; ctx.font = `bold 30px ${FONT_MONO}`;
+  for (let i = 0; i < 4000; i++) { ctx.fillStyle = `rgba(255,255,255,${r() * .04})`; ctx.fillRect(r() * 512, r() * 768, 2, 2); }
+  ctx.textAlign = 'center'; ctx.fillStyle = '#ffd35a';
+  ctx.font = `700 70px ${FONT_UI}`; ctx.fillText('MENU', 256, 100);
+  ctx.textAlign = 'left'; ctx.font = `600 32px ${FONT_UI}`;
   const items = [['xss soup', '0.00'], ['sqli noodles', "' OR 1"], ['rce ramen', 'root'], ['idor bowl', '#1337'], ['ssrf tea', '169.254'], ['uart buns', '115200']];
   items.forEach(([name, price], i) => {
     const y = 190 + i * 88;
-    ctx.fillStyle = '#e9ecf5'; ctx.fillText(name, 44, y);
-    ctx.fillStyle = '#2af3ff'; ctx.textAlign = 'right'; ctx.fillText(price, 468, y + 34); ctx.textAlign = 'left';
-    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 2; ctx.setLineDash([4, 8]);
-    ctx.beginPath(); ctx.moveTo(44, y + 50); ctx.lineTo(468, y + 50); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#f2f2f2'; ctx.fillText(name, 44, y);
+    ctx.fillStyle = '#7ff8ff'; ctx.textAlign = 'right'; ctx.fillText(price, 468, y + 36); ctx.textAlign = 'left';
   });
   return toTexture(c);
 }
 
-/** Vending machine front: rows of glowing cans. */
-export function vending() {
-  const [c, ctx] = canvas(512, 1024);
-  ctx.fillStyle = '#060810'; ctx.fillRect(0, 0, 512, 1024);
-  const cols = ['#ff2bd6', '#2af3ff', '#b6ff3b', '#ffb020', '#ff4b4b', '#8a7bff'];
-  const r = rng(5);
-  for (let row = 0; row < 6; row++) {
-    const y = 60 + row * 130;
-    ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fillRect(30, y + 96, 452, 6);
-    for (let i = 0; i < 5; i++) {
-      const col = cols[(row * 2 + i + (r() * 2 | 0)) % cols.length];
-      const x = 50 + i * 88;
-      ctx.shadowColor = col; ctx.shadowBlur = 20;
-      ctx.fillStyle = col; ctx.fillRect(x, y + 14, 56, 82);
-      ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(x + 8, y + 20, 8, 70);
-    }
-  }
-  ctx.fillStyle = '#0d1018'; ctx.fillRect(0, 850, 512, 174);
-  ctx.fillStyle = '#000'; ctx.fillRect(60, 900, 392, 80);
-  ctx.font = `bold 40px ${FONT_MONO}`; ctx.fillStyle = '#2af3ff'; ctx.textAlign = 'center';
-  ctx.shadowColor = '#2af3ff'; ctx.shadowBlur = 16;
-  ctx.fillText('C0FFEE', 256, 818);
-  return toTexture(c);
+/** Soft radial falloff for the floor so the diorama floats in the dark. */
+export function floorAlpha() {
+  const [c, ctx] = canvas(512, 512);
+  const g = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+  g.addColorStop(0, '#fff'); g.addColorStop(.35, '#fff'); g.addColorStop(1, '#000');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 512, 512);
+  return toTexture(c, { srgb: false });
 }
 
-/** Wet asphalt: rough where dry, transparent where puddles (so the reflector shows through). */
-export function wetGround() {
-  const size = 1024;
-  const [c, ctx] = canvas(size, size);
-  const [a, actx] = canvas(size, size);
-  ctx.fillStyle = '#0d0f14'; ctx.fillRect(0, 0, size, size);
-  const r = rng(21);
-  for (let i = 0; i < 60000; i++) {
-    const v = 8 + r() * 30 | 0;
-    ctx.fillStyle = `rgb(${v},${v},${v + 4})`;
-    ctx.fillRect(r() * size, r() * size, 1 + r() * 2, 1 + r() * 2);
-  }
-  // Alpha: mostly semi-opaque asphalt with blotchy puddles.
-  actx.fillStyle = 'rgb(200,200,200)'; actx.fillRect(0, 0, size, size);
-  for (let i = 0; i < 70; i++) {
-    const x = r() * size, y = r() * size, rad = 30 + r() * 160;
-    const g = actx.createRadialGradient(x, y, 0, x, y, rad);
-    g.addColorStop(0, 'rgba(40,40,40,.9)'); g.addColorStop(1, 'rgba(40,40,40,0)');
-    actx.fillStyle = g;
-    actx.beginPath(); actx.ellipse(x, y, rad, rad * (.5 + r() * .5), r() * 3, 0, 7); actx.fill();
-  }
-  return { map: toTexture(c, { repeat: [6, 6] }), alphaMap: toTexture(a, { srgb: false, repeat: [3, 3] }) };
-}
+// ---------------------------------------------------------------------------
+// Screens in "attract mode": what each screen shows before you fly into it.
+// Each returns { texture, update(t) }; update redraws only when the frame changes.
 
-/** Distant building facade with random lit windows. */
-export function facade(seed) {
-  const [c, ctx] = canvas(256, 512);
-  ctx.fillStyle = '#07080d'; ctx.fillRect(0, 0, 256, 512);
-  const r = rng(seed);
-  const warm = ['#ffcf7a', '#ffe2b0', '#9fd8ff', '#ff9fe6'];
-  for (let y = 12; y < 512; y += 22) {
-    for (let x = 10; x < 250; x += 20) {
-      if (r() < .09) {
-        ctx.fillStyle = warm[r() * warm.length | 0];
-        ctx.globalAlpha = .25 + r() * .5;
-        ctx.fillRect(x, y, 12, 14);
-      }
-    }
-  }
-  ctx.globalAlpha = 1;
-  return toTexture(c);
-}
-
-/**
- * The stall's monitor: a little terminal that types a boot script,
- * then idles with a blinking cursor. Returns { texture, update(t), setLine(text) }.
- */
-export function terminal(lines) {
-  const W = 768, H = 560;
-  const [c, ctx] = canvas(W, H);
+function animated(w, h, draw, fps = 8) {
+  const [c, ctx] = canvas(w, h);
   const texture = toTexture(c);
-  let script = lines;
-  let start = 0;
-  let lastDrawn = '';
-
-  function draw(t) {
-    const elapsed = (t - start) * 38; // characters per second
-    let budget = Math.floor(elapsed);
-    const shown = [];
-    for (const line of script) {
-      if (budget <= 0) break;
-      shown.push(line.slice(0, budget));
-      budget -= line.length + 6; // brief pause at end of each line
-    }
-    const cursorOn = Math.floor(t * 2) % 2 === 0;
-    const key = shown.join('\n') + cursorOn;
-    if (key === lastDrawn) return;
-    lastDrawn = key;
-
-    ctx.fillStyle = '#021013'; ctx.fillRect(0, 0, W, H);
-    const g = ctx.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, W * .7);
-    g.addColorStop(0, 'rgba(42,243,255,.10)'); g.addColorStop(1, 'rgba(0,0,0,.6)');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-
-    ctx.font = `bold 34px ${FONT_MONO}`;
-    ctx.textBaseline = 'top';
-    ctx.shadowColor = '#2af3ff'; ctx.shadowBlur = 10;
-    let y = 40;
-    shown.forEach((line, i) => {
-      ctx.fillStyle = line.startsWith('$') ? '#b6ff3b' : '#bdf8ff';
-      ctx.fillText(line, 40, y);
-      if (i === shown.length - 1 && cursorOn) {
-        ctx.fillRect(40 + ctx.measureText(line).width + 6, y + 2, 18, 34);
-      }
-      y += 50;
-    });
-    if (!shown.length && cursorOn) { ctx.fillStyle = '#bdf8ff'; ctx.fillRect(40, 42, 18, 34); }
-    ctx.shadowBlur = 0;
-    // Scanlines
-    ctx.fillStyle = 'rgba(0,0,0,.28)';
-    for (let sy = 0; sy < H; sy += 4) ctx.fillRect(0, sy, W, 2);
+  let last = -1;
+  const update = (t) => {
+    const frame = Math.floor(t * fps);
+    if (frame === last) return;
+    last = frame;
+    ctx.save(); draw(ctx, t, frame); ctx.restore();
     texture.needsUpdate = true;
-  }
-
-  return {
-    texture,
-    update: draw,
-    run(newLines, t) { script = newLines; start = t; lastDrawn = ''; },
   };
+  update(0);
+  return { texture, update };
+}
+
+function codeBars(ctx, x, y, s, seed) {
+  const r = rng(seed);
+  const cols = ['#ff4fa3', '#2af3ff', '#b6ff3b', '#ffb020', '#8a7bff', '#8b91a6'];
+  for (let row = 0; row < 2; row++) {
+    let cx = x + (row ? 18 * s : 0);
+    for (let k = 0; k < 3; k++) {
+      const w = (30 + r() * 110) * s;
+      ctx.fillStyle = cols[(r() * cols.length) | 0];
+      roundRect(ctx, cx, y + row * 16 * s, w, 8 * s, 4 * s); ctx.fill();
+      cx += w + 10 * s;
+    }
+  }
+}
+
+export function monitorScreen(name) {
+  return animated(1280, 800, (ctx, t, f) => {
+    ctx.fillStyle = '#0f1017'; ctx.fillRect(0, 0, 1280, 800);
+    codeBars(ctx, 170, 200, 1.6, 4);
+    ctx.fillStyle = '#ffffff'; ctx.font = `700 100px ${FONT_UI}`; ctx.textBaseline = 'alphabetic';
+    ctx.fillText(`Hi, I'm ${name.split(' ')[0]}.`, 170, 370);
+    codeBars(ctx, 170, 410, 1.6, 9);
+    ctx.fillStyle = '#8b91a6'; ctx.font = `600 36px ${FONT_UI}`;
+    ctx.fillText('security researcher  ·  cyb3r_n3rd', 170, 520);
+    ctx.fillStyle = f % 2 ? '#2af3ff' : '#1d6f78';
+    ctx.font = `600 30px ${FONT_MONO}`;
+    ctx.fillText('> click to open about_me', 170, 620);
+    ctx.translate(1190, 160); ctx.rotate(Math.PI / 2);
+    ctx.font = `600 36px ${FONT_UI}`;
+    ['About', 'Skills', 'Experience'].forEach((s, i) => { ctx.fillStyle = i ? '#cfd3e0' : '#2af3ff'; ctx.fillText(s, i * 190, 0); });
+  }, 2);
+}
+
+export function vendingScreen(projects) {
+  return animated(640, 860, (ctx, t, f) => {
+    const g = ctx.createLinearGradient(0, 0, 0, 860);
+    g.addColorStop(0, '#5cf0bf'); g.addColorStop(1, '#22b6a0');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 640, 860);
+    projects.slice(0, 8).forEach((p, i) => {
+      const x = 28 + (i % 4) * 148, y = 36 + Math.floor(i / 4) * 290;
+      ctx.fillStyle = 'rgba(255,255,255,.3)'; roundRect(ctx, x, y, 136, 270, 16); ctx.fill();
+      drawItem(ctx, p, x + 68, y + 130, 1);
+      ctx.fillStyle = '#0f3b36'; ctx.font = `700 24px ${FONT_UI}`; ctx.textAlign = 'center';
+      ctx.fillText(p.code, x + 68, y + 248); ctx.textAlign = 'left';
+    });
+    ctx.fillStyle = '#26257a'; roundRect(ctx, 28, 640, 584, 180, 20); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = `700 42px ${FONT_UI}`; ctx.fillText('Pick a project', 60, 718);
+    ctx.font = `600 28px ${FONT_UI}`; ctx.fillStyle = f % 2 ? '#b6ff3b' : '#9feedd'; ctx.fillText('tap to browse  →', 60, 775);
+  }, 2);
+}
+
+/** Can / bottle / carton, drawn on the vending screen canvas. */
+export function drawItem(ctx, p, cx, cy, s = 1) {
+  ctx.save(); ctx.translate(cx, cy); ctx.scale(s, s);
+  const shade = (a) => '#' + new THREE.Color(p.color).offsetHSL(0, 0, a).getHexString();
+  ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(0, 80, 44, 10, 0, 0, 7); ctx.fill();
+  if (p.kind === 'bottle') {
+    ctx.fillStyle = shade(-.1);
+    roundRect(ctx, -30, -40, 60, 116, 18); ctx.fill();
+    roundRect(ctx, -12, -84, 24, 50, 6); ctx.fill();
+    ctx.fillStyle = '#222'; roundRect(ctx, -14, -96, 28, 16, 4); ctx.fill();
+    ctx.fillStyle = '#fff'; roundRect(ctx, -30, -4, 60, 40, 4); ctx.fill();
+  } else if (p.kind === 'carton') {
+    ctx.fillStyle = shade(0);
+    ctx.fillRect(-34, -40, 68, 116);
+    ctx.beginPath(); ctx.moveTo(-34, -40); ctx.lineTo(0, -80); ctx.lineTo(34, -40); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(-34, -2, 68, 36);
+  } else {
+    ctx.fillStyle = shade(0);
+    roundRect(ctx, -32, -60, 64, 136, 10); ctx.fill();
+    ctx.fillStyle = '#d7dbe4'; roundRect(ctx, -30, -66, 60, 12, 5); ctx.fill();
+    ctx.fillStyle = '#fff'; roundRect(ctx, -32, -6, 64, 36, 2); ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(-22, -30, 8, 90);
+  ctx.fillStyle = '#15112a'; ctx.font = `700 13px ${FONT_UI}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(p.name.toUpperCase().slice(0, 9), 0, 14);
+  ctx.restore();
+}
+
+export function arcadeScreen() {
+  return animated(640, 500, (ctx, t, f) => {
+    ctx.fillStyle = '#0b0620'; ctx.fillRect(0, 0, 640, 500);
+    ctx.strokeStyle = 'rgba(255,79,163,.5)'; ctx.lineWidth = 2;
+    const scroll = (t * .6) % 1;
+    for (let i = 0; i < 12; i++) { const k = (i + scroll) / 12; const y = 300 + k * k * 200; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(640, y); ctx.stroke(); }
+    for (let i = -10; i <= 10; i++) { ctx.beginPath(); ctx.moveTo(320 + i * 20, 300); ctx.lineTo(320 + i * 90, 500); ctx.stroke(); }
+    ctx.fillStyle = '#ffb020'; ctx.beginPath(); ctx.arc(320, 300, 70, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#0b0620'; for (let k = 0; k < 5; k++) ctx.fillRect(250, 250 + k * 11, 140, 3 + k);
+    ctx.textAlign = 'center';
+    ctx.font = `14px ${FONT_PIXEL}`; ctx.fillStyle = '#ff4b4b';
+    ctx.fillText('SCORE', 100, 44); ctx.fillText('HI-SCORE', 320, 44); ctx.fillText('LEVEL', 540, 44);
+    ctx.fillStyle = '#fff'; ctx.fillText('0000', 100, 70); ctx.fillText('1337', 320, 70); ctx.fillText('01', 540, 70);
+    const g = ctx.createLinearGradient(0, 140, 0, 200);
+    g.addColorStop(0, '#fff6a8'); g.addColorStop(.5, '#ffb020'); g.addColorStop(1, '#ff4fa3');
+    ctx.fillStyle = g; ctx.shadowColor = '#ff4fa3'; ctx.shadowBlur = 18;
+    ctx.font = `50px ${FONT_PIXEL}`; ctx.fillText('CONTACT', 320, 190);
+    ctx.shadowBlur = 0;
+    if (f % 2) { ctx.fillStyle = '#fff'; ctx.font = `16px ${FONT_PIXEL}`; ctx.fillText('INSERT COIN', 320, 232); }
+  }, 2);
+}
+
+export function tvScreen() {
+  const r = rng(77);
+  return animated(800, 600, (ctx, t, f) => {
+    ctx.fillStyle = '#081a14'; ctx.fillRect(0, 0, 800, 600);
+    ctx.fillStyle = '#b6ff3b'; ctx.shadowColor = '#b6ff3b'; ctx.shadowBlur = 14;
+    ctx.font = `700 70px ${FONT_MONO}`; ctx.fillText('RESEARCH', 60, 140);
+    ctx.shadowBlur = 0;
+    ctx.font = `500 30px ${FONT_MONO}`;
+    const lines = ['$ ls ~/writeups', 'finding_01.md', 'finding_02.md', 'teardown_03.md', 'ctf_04.md'];
+    lines.forEach((l, i) => { ctx.fillStyle = i ? '#9dffcf' : '#b6ff3b'; ctx.fillText(l, 60, 230 + i * 56); });
+    if ((f >> 2) % 2) ctx.fillRect(60, 230 + lines.length * 56 - 26, 18, 32);
+    const y = (t * 120) % 640 - 40;
+    ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fillRect(0, y, 800, 40);
+    for (let i = 0; i < 300; i++) { ctx.fillStyle = `rgba(255,255,255,${r() * .08})`; ctx.fillRect(r() * 800, r() * 600, 2, 2); }
+    ctx.fillStyle = 'rgba(0,0,0,.25)';
+    for (let sy = 0; sy < 600; sy += 4) ctx.fillRect(0, sy, 800, 2);
+  }, 8);
 }

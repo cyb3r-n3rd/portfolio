@@ -4,11 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Shivam Verma — cyb3r_n3rd</title>
-<meta name="description" content="Shivam Verma (cyb3r_n3rd), security researcher. An interactive 3D portfolio: a neon street stall at night.">
-<meta name="theme-color" content="#05060a">
+<meta name="description" content="Shivam Verma (cyb3r_n3rd), security researcher. An interactive 3D portfolio: a little neon stall floating in the dark.">
+<meta name="theme-color" content="#07060d">
 <meta property="og:title" content="Shivam Verma — cyb3r_n3rd">
 <meta property="og:description" content="Security researcher. Pull up a stool.">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Press+Start+2P&family=Quicksand:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <script type="importmap">
 {
@@ -24,99 +27,42 @@
 
 <canvas id="scene" aria-hidden="true"></canvas>
 
-<div class="loader" id="loader" role="status" aria-live="polite">
-  <div class="loader-inner">
-    <span class="loader-name">cyb3r_n3rd</span>
-    <span class="loader-bar"><i id="loader-fill"></i></span>
-    <span class="loader-text mono" id="loader-text">wiring the neon…</span>
+<!-- Loading + start gate -->
+<div class="gate" id="gate">
+  <div class="gate-inner">
+    <p class="gate-handle">cyb3r_n3rd</p>
+    <div class="gate-bar" id="gate-bar"><i id="gate-fill"></i></div>
+    <button type="button" class="gate-start" id="gate-start" hidden>Start</button>
+    <p class="gate-note" id="gate-note">loading…</p>
   </div>
 </div>
 
 <header class="hud" id="hud">
-  <a class="brand" href="#" data-home>Shivam&nbsp;Verma <span>/ cyb3r_n3rd</span></a>
+  <a class="brand" href="#" data-home>
+    <span class="brand-name">Shivam Verma</span>
+    <span class="brand-role">Security Researcher</span>
+  </a>
   <nav aria-label="Sections">
-    <a href="#about" data-open="about" style="--c:var(--cyan)">About</a>
-    <a href="#projects" data-open="projects" style="--c:var(--magenta)">Projects</a>
-    <a href="#research" data-open="research" style="--c:var(--lime)">Research</a>
-    <a href="#contact" data-open="contact" style="--c:var(--amber)">Contact</a>
+    <a href="#about" data-open="about">About</a>
+    <a href="#projects" data-open="projects">Projects</a>
+    <a href="#research" data-open="research">Research</a>
+    <a href="#contact" data-open="contact">Contact</a>
   </nav>
 </header>
 
-<p class="hint mono" id="hint" aria-hidden="true"><i></i> click a sign</p>
+<p class="hint" id="hint"><span>drag to look around</span><span>click a sign</span></p>
 
-<!--
-  Section content. Each <section data-panel="…"> is shown inside the stall's
-  screen when its sign is clicked. Without WebGL (or JS) these render as a
-  plain page instead.
--->
-<main class="screen" id="screen" aria-live="polite">
-  <div class="screen-frame">
-    <div class="screen-bar mono">
-      <span class="screen-path" id="screen-path">~/about</span>
-      <button type="button" class="screen-close" id="screen-close" aria-label="Close and return to the street">cd .. <kbd>esc</kbd></button>
-    </div>
+<!-- The screen UIs. js/ui.js fills these from js/content.js and main.js
+     pins the active one over the matching 3D screen. -->
+<div class="ui" id="ui" aria-live="polite"></div>
 
-    <div class="screen-body" id="screen-body">
-
-      <section id="about" data-panel="about" style="--c:var(--cyan)" aria-labelledby="h-about">
-        <p class="kicker mono">$ whoami</p>
-        <h2 id="h-about">Shivam Verma</h2>
-        <p class="lede">Security researcher, also known as <b>cyb3r_n3rd</b>. I break web apps, mobile apps and hardware so they can be rebuilt stronger.</p>
-        <p>Placeholder bio: a couple of sentences about what gets me out of bed, the kind of targets I enjoy, and how I like to work with the teams whose systems I test.</p>
-        <dl class="facts">
-          <div><dt class="mono">Focus</dt><dd>Web · Mobile · Hardware</dd></div>
-          <div><dt class="mono">Based in</dt><dd>India</dd></div>
-          <div><dt class="mono">Status</dt><dd>Open to interesting problems</dd></div>
-        </dl>
-      </section>
-
-      <section id="projects" data-panel="projects" style="--c:var(--magenta)" aria-labelledby="h-projects">
-        <p class="kicker mono">$ ls ~/projects</p>
-        <h2 id="h-projects">Projects</h2>
-        <ul class="cards">
-          <li>
-            <h3>Project one</h3>
-            <p>Placeholder: a tool or framework, what problem it solves, and one line on how it works.</p>
-            <p class="tags mono">python · automation</p>
-          </li>
-          <li>
-            <h3>Project two</h3>
-            <p>Placeholder: an Android or iOS testing utility and the class of bug it helps find.</p>
-            <p class="tags mono">mobile · frida</p>
-          </li>
-          <li>
-            <h3>Project three</h3>
-            <p>Placeholder: a hardware teardown rig or firmware extraction workflow.</p>
-            <p class="tags mono">hardware · uart · spi</p>
-          </li>
-        </ul>
-      </section>
-
-      <section id="research" data-panel="research" style="--c:var(--lime)" aria-labelledby="h-research">
-        <p class="kicker mono">$ cat ~/research/index</p>
-        <h2 id="h-research">Research &amp; write-ups</h2>
-        <ol class="log">
-          <li><span class="mono">2026</span><div><h3>Write-up title one</h3><p>Placeholder: a short summary of the finding, its impact and the fix.</p></div></li>
-          <li><span class="mono">2026</span><div><h3>Write-up title two</h3><p>Placeholder: a disclosed vulnerability, CVE or conference talk.</p></div></li>
-          <li><span class="mono">2025</span><div><h3>Write-up title three</h3><p>Placeholder: a CTF challenge walkthrough or technique deep-dive.</p></div></li>
-        </ol>
-      </section>
-
-      <section id="contact" data-panel="contact" style="--c:var(--amber)" aria-labelledby="h-contact">
-        <p class="kicker mono">$ ./contact --secure</p>
-        <h2 id="h-contact">Contact</h2>
-        <p class="lede">Found something, building something, or want a second pair of eyes on it? Say hello.</p>
-        <ul class="links">
-          <li><span class="mono">github</span><a href="https://github.com/cyb3r-n3rd" rel="noopener">github.com/cyb3r-n3rd</a></li>
-          <li><span class="mono">email</span><a href="#">placeholder@example.com</a></li>
-          <li><span class="mono">linkedin</span><a href="#">placeholder</a></li>
-          <li><span class="mono">pgp</span><span>placeholder fingerprint</span></li>
-        </ul>
-      </section>
-
-    </div>
+<noscript>
+  <div class="noscript">
+    <h1>Shivam Verma · cyb3r_n3rd</h1>
+    <p>Security researcher. This portfolio is an interactive 3D scene and needs JavaScript.</p>
+    <p><a href="https://github.com/cyb3r-n3rd">github.com/cyb3r-n3rd</a></p>
   </div>
-</main>
+</noscript>
 
 <script type="module" src="js/main.js"></script>
 </body>
