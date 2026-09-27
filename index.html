@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shivam Verma — cyb3r_n3rd</title>
+<meta name="description" content="Shivam Verma (cyb3r_n3rd), Security Assessment Engineer at C3i Hub, IIT Kanpur. Web, mobile and hardware security.">
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --black:#0A0A0A; --white:#F2F2EE; --grey:#8A8A86; --line:#262626;
+  --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --gutter:clamp(16px,3vw,40px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--black);color:var(--white);font:17px/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+::selection{background:var(--white);color:var(--black)}
+:focus-visible{outline:2px solid var(--white);outline-offset:4px}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+
+/* ---------- header ---------- */
+.top{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:calc(env(safe-area-inset-top,0px) + 18px) var(--gutter) 18px;mix-blend-mode:difference;color:#fff;pointer-events:none}
+.top a,.top nav{pointer-events:auto}
+.top .brand{font:800 15px var(--sans);font-stretch:112%;text-decoration:none;letter-spacing:.02em}
+.top nav{display:flex;gap:22px}
+.top nav a{text-decoration:none}
+.top nav a:hover{text-decoration:line-through}
+
+/* ---------- 3D hero ---------- */
+.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;background:var(--white);color:var(--black)}
+#room{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+#room.pointing{cursor:pointer}
+.hero-copy{position:absolute;left:var(--gutter);right:var(--gutter);bottom:calc(env(safe-area-inset-bottom,0px) + 22px);pointer-events:none;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+.hero h1{margin:0;font-weight:900;font-stretch:125%;font-size:clamp(46px,11.5vw,190px);line-height:.8;letter-spacing:-.035em;text-transform:uppercase}
+.hero-side{max-width:300px;display:grid;gap:10px;padding-bottom:6px}
+.hero-side p{margin:0;font-size:15px;color:#444}
+.hero-side p b{color:var(--black);font-weight:600}
+.hint{display:flex;align-items:center;gap:8px;color:var(--black)}
+.hint i{width:8px;height:8px;border-radius:50%;background:var(--black);animation:blink 1.4s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+#tip{position:fixed;z-index:30;pointer-events:none;background:var(--black);color:var(--white);padding:6px 10px;transform:translate(14px,14px);opacity:0;transition:opacity .15s;white-space:nowrap}
+#tip.on{opacity:1}
+
+/* loader */
+#loader{position:fixed;inset:0;z-index:50;background:var(--black);display:flex;flex-direction:column;justify-content:flex-end;padding:var(--gutter);transition:transform .9s cubic-bezier(.77,0,.18,1)}
+#loader.done{transform:translateY(-100%)}
+#loader .pct{font-weight:900;font-stretch:125%;font-size:clamp(90px,22vw,340px);line-height:.8;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+#loader .mono{color:var(--grey);margin-bottom:14px}
+
+/* ---------- marquee ---------- */
+.marquee{border-block:1px solid var(--white);overflow:hidden;white-space:nowrap;background:var(--white);color:var(--black)}
+.marquee div{display:inline-flex;animation:slide 28s linear infinite}
+.marquee span{font-weight:900;font-stretch:125%;font-size:clamp(28px,5vw,64px);text-transform:uppercase;padding:14px 0;letter-spacing:-.02em}
+.marquee span::after{content:"✳";margin:0 .45em;font-weight:400}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+/* ---------- sections ---------- */
+section{padding:clamp(80px,12vw,160px) var(--gutter)}
+.label{display:flex;justify-content:space-between;gap:16px;border-top:1px solid var(--white);padding-top:12px;margin-bottom:clamp(40px,6vw,80px)}
+.label span:last-child{color:var(--grey)}
+
+.statement{margin:0;font-weight:800;font-stretch:100%;font-size:clamp(32px,5.6vw,88px);line-height:1;letter-spacing:-.03em;text-wrap:balance;max-width:16ch}
+.statement .w{transition:opacity .35s}
+.js .statement .w{opacity:.2}
+.js .statement .w.lit{opacity:1}
+.statement em{font-style:normal;font-stretch:62%;font-weight:400}
+.about-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:clamp(48px,7vw,96px)}
+.about-foot div{border-top:1px solid var(--line);padding-top:14px}
+.about-foot b{display:block;font-weight:900;font-stretch:125%;font-size:clamp(40px,6vw,84px);line-height:1;letter-spacing:-.03em}
+.about-foot span{color:var(--grey);font-size:15px}
+
+/* rows (experience + work) */
+.rows{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--white)}
+.row{position:relative;display:grid;grid-template-columns:1.1fr 2fr 1fr;gap:24px;align-items:baseline;border-top:1px solid var(--white);
+  padding:clamp(18px,2.6vw,34px) 0;transition:background .25s,color .25s,padding .25s}
+.row:hover{background:var(--white);color:var(--black);padding-inline:18px}
+.row:hover .dim{color:#555}
+.row h3{margin:0;font-weight:900;font-stretch:112%;font-size:clamp(26px,3.6vw,54px);line-height:.95;letter-spacing:-.025em;text-transform:uppercase}
+.row .dim{color:var(--grey);font-size:15px;transition:color .25s}
+.row .end{text-align:right}
+.row a.cover{position:absolute;inset:0}
+.row p{margin:6px 0 0;max-width:52ch}
+
+/* skills */
+.skills{display:grid;grid-template-columns:repeat(2,1fr);gap:0 var(--gutter)}
+.skill{border-top:1px solid var(--white);padding:18px 0 34px}
+.skill h3{margin:0 0 14px;font-weight:900;font-stretch:125%;font-size:clamp(34px,5vw,72px);line-height:.9;letter-spacing:-.03em;text-transform:uppercase}
+.skill ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.skill li{border:1px solid var(--grey);border-radius:999px;padding:4px 14px;font-size:15px;transition:background .2s,color .2s}
+.skill li:hover{background:var(--white);color:var(--black);border-color:var(--white)}
+
+/* contact */
+.contact{background:var(--white);color:var(--black)}
+.contact .label{border-color:var(--black)}
+.contact .label span:last-child{color:#555}
+.big-cta{display:block;font-weight:900;font-stretch:125%;font-size:clamp(64px,16vw,260px);line-height:.8;letter-spacing:-.045em;text-transform:uppercase;text-decoration:none;margin-bottom:clamp(40px,6vw,72px)}
+.big-cta:hover{font-stretch:62%;transition:font-stretch .4s}
+.mail{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-weight:700;font-size:clamp(20px,3vw,40px);letter-spacing:-.02em;margin-bottom:48px;word-break:break-all}
+.mail button{font:500 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--black);color:var(--white);border:0;border-radius:999px;padding:9px 16px;cursor:pointer}
+.links{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.links a{border-top:1px solid var(--black);padding:14px 0;text-decoration:none;display:flex;justify-content:space-between;margin-right:16px}
+.links a:hover{text-decoration:line-through}
+footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:24px var(--gutter) calc(env(safe-area-inset-bottom,0px) + 24px);background:var(--white);color:#555;border-top:1px solid var(--black)}
+
+@media (max-width:820px){
+  .top nav{display:none}
+  .row{grid-template-columns:1fr;gap:6px}
+  .row .end{text-align:left}
+  .skills{grid-template-columns:1fr}
+  .about-foot{grid-template-columns:1fr}
+  .links{grid-template-columns:1fr 1fr}
+  .hero-side{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .marquee div,.hint i{animation:none}
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js')</script>
+
+<div id="loader" aria-hidden="true">
+  <div class="mono">booting workstation</div>
+  <div class="pct"><span id="pct">0</span>%</div>
+</div>
+
+<header class="top mono">
+  <a class="brand" href="#top">CYB3R_N3RD</a>
+  <nav aria-label="Sections">
+    <a href="#about">About</a><a href="#experience">Experience</a><a href="#work">Work</a><a href="#skills">Skills</a><a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <canvas id="room" aria-label="3D model of a security researcher's desk. Click objects to jump to sections."></canvas>
+    <div class="hero-copy">
+      <h1>Shivam<br>Verma</h1>
+      <div class="hero-side">
+        <p><b>Security Assessment Engineer</b> at C3i Hub, IIT Kanpur. I break web, mobile and hardware systems so they can be fixed.</p>
+        <div class="hint mono"><i></i><span id="hintText">Drag to look around · click objects</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="marquee" aria-hidden="true"><div>
+    <span>Web security</span><span>Mobile</span><span>Hardware</span><span>Forensics</span><span>Bug bounty</span><span>Responsible disclosure</span>
+    <span>Web security</span><span>Mobile</span><span>Hardware</span><span>Forensics</span><span>Bug bounty</span><span>Responsible disclosure</span>
+  </div></div>
+
+  <section id="about">
+    <div class="label mono"><span>About</span><span>Kanpur, India</span></div>
+    <p class="statement" id="statement">I find the holes <em>before</em> someone else does — then I write them up so they get fixed.</p>
+    <div class="about-foot">
+      <div><b>2019</b><span>Started in cyber forensics with the U.P. Police Cyber Cell</span></div>
+      <div><b>5+ yrs</b><span>Security assessments across web, mobile and hardware</span></div>
+      <div><b>CVE</b><span>Published responsible disclosure, 2022</span></div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="label mono"><span>Experience</span><span>2019 — now</span></div>
+    <ol class="rows">
+      <li class="row"><span class="mono dim">Mar 2021 — Present</span><div><h3>C3i Hub, IIT Kanpur</h3><p class="dim">Security assessments of applications and systems at IIT Kanpur's cybersecurity innovation hub.</p></div><span class="end mono">Security Assessment Engineer</span></li>
+      <li class="row"><span class="mono dim">Feb — Aug 2020</span><div><h3>Bulwark CyberX</h3><p class="dim">Penetration testing and vulnerability assessment of client web applications.</p></div><span class="end mono">Cyber Security Intern</span></li>
+      <li class="row"><span class="mono dim">Jan — Feb 2019</span><div><h3>Cyber Cell, U.P. Police</h3><p class="dim">Digital forensics and cybercrime investigation support.</p></div><span class="end mono">Cyber Forensics Intern</span></li>
+    </ol>
+  </section>
+
+  <section id="work">
+    <div class="label mono"><span>Selected work</span><span>github.com/cyb3r-n3rd</span></div>
+    <ul class="rows">
+      <li class="row"><span class="mono dim">Disclosure · 2022</span><div><h3>Stored XSS in Click2Magic</h3><p class="dim">Found and reported a stored XSS in a customer-support chat app (v1.1.5) that put admin sessions at risk.</p></div><span class="end mono">Read write-up ↗</span><a class="cover" href="https://github.com/cyb3r-n3rd/CVE" target="_blank" rel="noopener" aria-label="Read the Click2Magic write-up"></a></li>
+      <li class="row"><span class="mono dim">Mobile · Python</span><div><h3>Mobile-Pentesting</h3><p class="dim">Scripts for analysing a mobile device's network traffic captured with Wireshark and similar tools.</p></div><span class="end mono">View repo ↗</span><a class="cover" href="https://github.com/cyb3r-n3rd/Mobile-Pentesting" target="_blank" rel="noopener" aria-label="View Mobile-Pentesting repo"></a></li>
+      <li class="row"><span class="mono dim">Hardware · Arduino</span><div><h3>Rubber Ducky build</h3><p class="dim">DIY keystroke-injection device on an ATmega32u4 + ESP8266 with a web UI, built to show why USB input is trusted by default.</p></div><span class="end mono">View repo ↗</span><a class="cover" href="https://github.com/cyb3r-n3rd/Rubber-Ducky" target="_blank" rel="noopener" aria-label="View Rubber Ducky repo"></a></li>
+      <li class="row"><span class="mono dim">Research · Notes</span><div><h3>Bug bounty notes</h3><p class="dim">Working notes, dork cheatsheets and reference gists from hunting on public programs.</p></div><span class="end mono">View gists ↗</span><a class="cover" href="https://gist.github.com/cyb3r-n3rd" target="_blank" rel="noopener" aria-label="View gists"></a></li>
+    </ul>
+  </section>
+
+  <section id="skills">
+    <div class="label mono"><span>Skills</span><span>Tools &amp; focus</span></div>
+    <div class="skills">
+      <div class="skill"><h3>Web</h3><ul><li>Penetration testing</li><li>OWASP Top 10</li><li>Burp Suite</li><li>Recon &amp; OSINT</li><li>Bug bounty</li></ul></div>
+      <div class="skill"><h3>Mobile</h3><ul><li>Android app testing</li><li>Traffic analysis</li><li>Wireshark</li></ul></div>
+      <div class="skill"><h3>Hardware</h3><ul><li>USB &amp; IoT devices</li><li>Arduino</li><li>ESP8266 / ESP32</li><li>Digital forensics</li></ul></div>
+      <div class="skill"><h3>Build</h3><ul><li>JavaScript</li><li>Node.js</li><li>React</li><li>PHP &amp; MySQL</li><li>Docker</li><li>Linux</li><li>Git</li></ul></div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="label mono"><span>Contact</span><span>Open to security roles &amp; collabs</span></div>
+    <a class="big-cta" href="mailto:v.shivam1996@gmail.com">Say hi →</a>
+    <div class="mail"><span id="email">v.shivam1996@gmail.com</span><button type="button" id="copy">Copy</button></div>
+    <div class="links mono">
+      <a href="https://github.com/cyb3r-n3rd" target="_blank" rel="noopener">GitHub <span>↗</span></a>
+      <a href="https://www.linkedin.com/in/shivam413" target="_blank" rel="noopener">LinkedIn <span>↗</span></a>
+      <a href="https://x.com/cyb3r_n3rd" target="_blank" rel="noopener">X / Twitter <span>↗</span></a>
+      <a href="https://medium.com/@cyb3r-n3rd" target="_blank" rel="noopener">Medium <span>↗</span></a>
+    </div>
+  </section>
+</main>
+<footer class="mono"><span>© 2026 Shivam Verma</span><span>Hand-built · Three.js · no trackers</span></footer>
+
+<div id="tip" class="mono"></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+
+<script>
+/* page UI that doesn't need three.js */
+(function(){
+  // statement: light words up as it scrolls through the viewport
+  var st=document.getElementById('statement');
+  st.innerHTML=st.innerHTML.replace(/(<em>.*?<\/em>|[^\s<]+)/g,'<span class="w">$1</span>');
+  var words=[].slice.call(st.querySelectorAll('.w'));
+  function lite(){
+    var r=st.getBoundingClientRect(),vh=innerHeight;
+    var p=Math.min(1,Math.max(0,(vh*0.85-r.top)/(r.height+vh*0.35)));
+    var n=Math.round(p*words.length);
+    words.forEach(function(w,i){w.classList.toggle('lit',i<n)});
+  }
+  addEventListener('scroll',lite,{passive:true});lite();
+
+  document.getElementById('copy').addEventListener('click',function(){
+    var b=this,t=document.getElementById('email').textContent;
+    (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){b.textContent='Copied'},function(){
+      var r=document.createRange();r.selectNodeContents(document.getElementById('email'));var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected';
+    });
+    setTimeout(function(){b.textContent='Copy'},1800);
+  });
+})();
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+const canvas=document.getElementById('room');
+const tip=document.getElementById('tip');
+const loader=document.getElementById('loader');
+const pctEl=document.getElementById('pct');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// loader count-up, then reveal
+let pct=0;
+const count=setInterval(()=>{pct=Math.min(100,pct+Math.ceil(Math.random()*9));pctEl.textContent=pct;if(pct>=100){clearInterval(count);setTimeout(()=>loader.classList.add('done'),250)}},reduce?5:45);
+
+/* ---------- renderer / scene ---------- */
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xF2F2EE);
+
+const camera=new THREE.PerspectiveCamera(32,1,0.1,100);
+const target=new THREE.Vector3(-0.5,1.5,-1.6);
+
+// toon shading, 3 hard bands — the "illustrated" look
+const grad=new THREE.DataTexture(new Uint8Array([70,70,70,255,160,160,160,255,255,255,255,255]),3,1);
+grad.minFilter=grad.magFilter=THREE.NearestFilter;grad.needsUpdate=true;
+const mat=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
+const edgeMat=new THREE.LineBasicMaterial({color:0x0A0A0A});
+
+function add(geo,color,x,y,z,parent=scene,{edges=true,rx=0,ry=0,rz=0}={}){
+  const m=new THREE.Mesh(geo,typeof color==='number'?mat(color):color);
+  m.position.set(x,y,z);m.rotation.set(rx,ry,rz);
+  m.castShadow=m.receiveShadow=true;
+  if(edges){m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo,30),edgeMat))}
+  parent.add(m);return m;
+}
+const box=(w,h,d,c,x,y,z,p,o)=>add(new THREE.BoxGeometry(w,h,d),c,x,y,z,p,o);
+const cyl=(rt,rb,h,c,x,y,z,p,o)=>add(new THREE.CylinderGeometry(rt,rb,h,24),c,x,y,z,p,o);
+
+/* ---------- room shell ---------- */
+box(9,0.2,9,0xD8D8D4,0,-0.1,0);                 // floor
+box(9,6,0.2,0xBDBDB8,0,3,-4.5);                  // back wall
+box(0.2,6,9,0xA8A8A3,-4.5,3,0);                  // left wall
+box(4.2,0.02,3,0x2A2A2A,0.2,0.01,-0.6,scene,{edges:false}); // rug
+for(let i=0;i<7;i++) box(4.2,0.021,0.08,0x3A3A3A,0.2,0.012,-1.9+i*0.4,scene,{edges:false});
+
+// window on back wall
+const win=new THREE.Group();win.position.set(2.2,3.4,-4.38);scene.add(win);
+box(2,1.6,0.08,0x6E6E6A,0,0,0,win);
+box(1.8,1.4,0.02,0xF2F2EE,0,0,0.05,win,{edges:false});
+box(0.06,1.4,0.04,0x6E6E6A,0,0,0.07,win);box(1.8,0.06,0.04,0x6E6E6A,0,0,0.07,win);
+
+// poster (canvas texture)
+function textTex(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');draw(g,w,h);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return{t,c,g}}
+const poster=textTex(256,360,(g,w,h)=>{g.fillStyle='#0A0A0A';g.fillRect(0,0,w,h);g.fillStyle='#F2F2EE';g.font='900 64px Archivo, Arial';g.textBaseline='top';
+  ['STAY','CURI','OUS.'].forEach((s,i)=>g.fillText(s,18,26+i*62));g.font='500 16px monospace';g.fillText('// cyb3r_n3rd',18,h-40)});
+add(new THREE.PlaneGeometry(1.1,1.55),new THREE.MeshBasicMaterial({map:poster.t}),-1.3,3.6,-4.39,scene,{edges:false});
+
+/* ---------- interactive objects ---------- */
+const hotspots=[];
+function hotspot(group,label,href){group.userData={label,href};hotspots.push(group);return group}
+
+// desk
+const desk=new THREE.Group();desk.position.set(-0.4,0,-3.3);scene.add(desk);
+box(3.4,0.12,1.4,0xE6E6E2,0,1.5,0,desk);
+[[-1.6,-0.6],[1.6,-0.6],[-1.6,0.6],[1.6,0.6]].forEach(([x,z])=>box(0.1,1.44,0.1,0x3A3A3A,x,0.72,z,desk));
+box(0.9,0.6,1.2,0x9A9A95,1.1,1.1,0,desk); // drawer unit
+
+// monitor → work
+const monitor=hotspot(new THREE.Group(),'Monitor → Work','#work');monitor.position.set(-0.2,1.56,-0.25);desk.add(monitor);
+box(0.5,0.04,0.3,0x1C1C1C,0,0.02,0,monitor);
+box(0.08,0.5,0.08,0x1C1C1C,0,0.28,-0.05,monitor);
+box(1.9,1.1,0.08,0x1C1C1C,0,0.95,0,monitor);
+const screen=textTex(640,370,()=>{});
+add(new THREE.PlaneGeometry(1.8,1.02),new THREE.MeshBasicMaterial({map:screen.t}),0,0.95,0.045,monitor,{edges:false});
+
+// laptop, keyboard, mug, phone
+const kb=box(1.1,0.04,0.35,0x2A2A2A,-0.2,1.58,0.25,desk);
+for(let r=0;r<4;r++)for(let k=0;k<13;k++)box(0.065,0.02,0.06,0xDADAD6,-0.2-0.48+k*0.08,1.61,0.25-0.12+r*0.08,desk,{edges:false});
+box(0.14,0.03,0.22,0x2A2A2A,0.55,1.575,0.3,desk); // mouse
+const mug=cyl(0.1,0.09,0.22,0xF2F2EE,-1.3,1.67,0.2,desk);
+add(new THREE.TorusGeometry(0.06,0.015,8,16),0xF2F2EE,-1.19,1.67,0.2,desk,{edges:false,ry:Math.PI/2});
+
+const phone=hotspot(new THREE.Group(),'Phone → Contact','#contact');phone.position.set(1.15,1.57,0.3);desk.add(phone);
+box(0.22,0.025,0.42,0x0F0F0F,0,0,0,phone,{ry:-0.3});
+const phoneGlow=box(0.19,0.005,0.37,new THREE.MeshBasicMaterial({color:0xF2F2EE}),0,0.016,0,phone,{edges:false,ry:-0.3});
+
+// lamp
+const lamp=new THREE.Group();lamp.position.set(-1.45,1.56,-0.35);desk.add(lamp);
+cyl(0.16,0.18,0.05,0x1C1C1C,0,0.03,0,lamp);
+box(0.04,0.7,0.04,0x1C1C1C,0,0.4,0,lamp,{rz:-0.35});
+box(0.04,0.55,0.04,0x1C1C1C,0.3,0.9,0,lamp,{rz:0.9});
+cyl(0.06,0.16,0.2,0x1C1C1C,0.55,0.95,0,lamp,{rz:0.6});
+const bulb=new THREE.PointLight(0xFFFFFF,6,5,1.6);bulb.position.set(0.5,0.8,0.1);lamp.add(bulb);
+
+// chair
+const chair=new THREE.Group();chair.position.set(-0.2,0,-1.8);chair.rotation.y=0.35;scene.add(chair);
+cyl(0.05,0.05,0.8,0x1C1C1C,0,0.45,0,chair);
+for(let i=0;i<5;i++){const a=i/5*Math.PI*2;box(0.5,0.05,0.07,0x1C1C1C,Math.cos(a)*0.25,0.08,Math.sin(a)*0.25,chair,{ry:-a})}
+box(0.85,0.12,0.8,0x2E2E2E,0,0.9,0,chair);
+box(0.85,1,0.1,0x2E2E2E,0,1.45,0.4,chair,{rx:-0.12});
+
+// server rack → experience
+const rack=hotspot(new THREE.Group(),'Server rack → Experience','#experience');rack.position.set(-3.5,0,-3.3);scene.add(rack);
+box(1,2.6,1,0x161616,0,1.3,0,rack);
+const leds=[];
+for(let u=0;u<7;u++){
+  box(0.84,0.26,0.02,0x2A2A2A,0,0.35+u*0.32,0.51,rack);
+  for(let l=0;l<4;l++){const led=box(0.04,0.04,0.02,new THREE.MeshBasicMaterial({color:0xF2F2EE}),-0.32+l*0.07,0.35+u*0.32,0.53,rack,{edges:false});leds.push(led)}
+  box(0.3,0.03,0.02,0x0A0A0A,0.22,0.35+u*0.32,0.53,rack,{edges:false});
+}
+
+// bookshelf → skills
+const shelf=hotspot(new THREE.Group(),'Bookshelf → Skills','#skills');shelf.position.set(-4.2,0,-0.6);scene.add(shelf);
+box(0.5,2.6,1.8,0x9A9A95,0,1.3,0,shelf);
+const greys=[0x1C1C1C,0xF2F2EE,0x5A5A56,0x2E2E2E,0xBDBDB8,0x0F0F0F,0x7A7A76];
+for(let s=0;s<4;s++){
+  box(0.48,0.04,1.7,0x6E6E6A,0.05,0.35+s*0.6,0,shelf);
+  let z=-0.78;
+  while(z<0.7){const w=0.07+Math.random()*0.07,h=0.3+Math.random()*0.18;
+    box(0.36,h,w,greys[Math.floor(Math.random()*greys.length)],0.05,0.37+s*0.6+h/2,z+w/2,shelf,{rx:Math.random()<.12?0.25:0});z+=w+0.01}
+}
+
+// plant
+const plant=new THREE.Group();plant.position.set(2.8,0,-3.7);scene.add(plant);
+cyl(0.3,0.24,0.6,0xF2F2EE,0,0.3,0,plant);
+for(let i=0;i<7;i++){const a=i/7*Math.PI*2;add(new THREE.ConeGeometry(0.09,0.9,6),0x2A2A2A,Math.cos(a)*0.12,1,Math.sin(a)*0.12,plant,{rx:Math.sin(a)*0.35,rz:-Math.cos(a)*0.35})}
+
+// about: the whole room also has a "sticky note" hotspot on the monitor frame
+const note=hotspot(new THREE.Group(),'Sticky note → About','#about');note.position.set(0.72,1.3,0.05);monitor.add(note);
+box(0.22,0.22,0.01,0xF2F2EE,0,0,0,note,{rz:0.12});
+
+/* ---------- lights ---------- */
+scene.add(new THREE.AmbientLight(0xFFFFFF,0.55));
+const sun=new THREE.DirectionalLight(0xFFFFFF,2.2);
+sun.position.set(4,8,5);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-6,right:6,top:6,bottom:-6});sun.shadow.bias=-0.0005;
+scene.add(sun);
+
+/* ---------- live terminal on the monitor ---------- */
+const script=[
+  '$ whoami','shivam verma  (cyb3r_n3rd)','',
+  '$ cat role.txt','Security Assessment Engineer','C3i Hub, IIT Kanpur','',
+  '$ ls ~/work','CVE/  Mobile-Pentesting/  Rubber-Ducky/','',
+  '$ echo $FOCUS','web · mobile · hardware · forensics','',
+  '$ ./say-hi.sh','> click the phone on the desk :)',''
+];
+let lines=[],li=0,ci=0;
+function drawScreen(cursor){
+  const g=screen.g,w=640,h=370;
+  g.fillStyle='#0A0A0A';g.fillRect(0,0,w,h);
+  g.fillStyle='#1E1E1E';g.fillRect(0,0,w,26);
+  g.fillStyle='#8A8A86';g.font='500 13px "JetBrains Mono", monospace';g.fillText('shivam@c3ihub: ~',14,17);
+  g.font='500 19px "JetBrains Mono", monospace';
+  const vis=lines.slice(-13);
+  vis.forEach((l,i)=>{g.fillStyle=l.startsWith('$')?'#FFFFFF':'#A8A8A3';g.fillText(l,16,54+i*24)});
+  if(cursor){const last=vis[vis.length-1]||'';g.fillStyle='#F2F2EE';g.fillRect(16+g.measureText(last).width+3,54+(vis.length-1)*24-16,11,20)}
+  screen.t.needsUpdate=true;
+}
+function tick(){
+  if(li>=script.length){lines=[];li=0;ci=0}
+  const full=script[li];
+  if(!lines.length||ci===0)lines.push('');
+  if(full.startsWith('$')&&ci<full.length){ci++;lines[lines.length-1]=full.slice(0,ci)}
+  else{lines[lines.length-1]=full;li++;ci=0}
+  drawScreen(true);
+}
+lines.push('');drawScreen(true);
+setInterval(tick,reduce?400:70);
+
+/* ---------- camera: drag to orbit a little, scroll to dolly ---------- */
+const base={r:11.5,theta:0.78,phi:1.08};
+let yaw=0,pitch=0,tYaw=0,tPitch=0,dragging=false,px=0,py=0,moved=0;
+canvas.addEventListener('pointerdown',e=>{dragging=true;moved=0;px=e.clientX;py=e.clientY;canvas.style.cursor='grabbing'});
+addEventListener('pointerup',()=>{dragging=false;canvas.style.cursor=''});
+const pointer=new THREE.Vector2(9,9);
+canvas.addEventListener('pointermove',e=>{
+  const r=canvas.getBoundingClientRect();
+  pointer.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
+  if(dragging){moved+=Math.abs(e.clientX-px)+Math.abs(e.clientY-py);
+    tYaw=Math.max(-0.5,Math.min(0.5,tYaw-(e.clientX-px)*0.004));
+    tPitch=Math.max(-0.18,Math.min(0.25,tPitch-(e.clientY-py)*0.003));
+    px=e.clientX;py=e.clientY}
+  tip.style.left=e.clientX+'px';tip.style.top=e.clientY+'px';
+});
+canvas.addEventListener('pointerleave',()=>{pointer.set(9,9);tip.classList.remove('on')});
+
+const ray=new THREE.Raycaster();
+let hovered=null;
+function rootOf(o){while(o&&!hotspots.includes(o))o=o.parent;return o}
+canvas.addEventListener('click',()=>{if(moved<6&&hovered)document.querySelector(hovered.userData.href).scrollIntoView({behavior:reduce?'auto':'smooth'})});
+
+function resize(){
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  renderer.setSize(w,h,false);camera.aspect=w/h;
+  camera.fov=w<700?46:32; // pull back on phones so the whole room fits
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize',resize);resize();
+
+let visible=true;
+new IntersectionObserver(([e])=>{visible=e.isIntersecting}).observe(canvas);
+
+const clock=new THREE.Clock();
+renderer.setAnimationLoop(()=>{
+  if(!visible)return;
+  const t=clock.getElapsedTime();
+  yaw+=(tYaw-yaw)*0.08;pitch+=(tPitch-pitch)*0.08;
+  const scroll=Math.min(1,scrollY/innerHeight);
+  const r=base.r*(1-scroll*0.45);
+  const th=base.theta+yaw+(reduce?0:Math.sin(t*0.15)*0.03);
+  const ph=base.phi+pitch;
+  camera.position.set(target.x+r*Math.sin(ph)*Math.sin(th),target.y+r*Math.cos(ph),target.z+r*Math.sin(ph)*Math.cos(th));
+  camera.lookAt(target);
+
+  // blinking rack lights
+  if(!reduce)leds.forEach((l,i)=>{l.visible=Math.sin(t*(2+i%5)+i*1.7)>-0.3});
+  phoneGlow.material.color.setScalar(0.55+0.45*Math.abs(Math.sin(t*1.5)));
+
+  // hover highlight
+  ray.setFromCamera(pointer,camera);
+  const hit=ray.intersectObjects(hotspots,true)[0];
+  const h=hit?rootOf(hit.object):null;
+  if(h!==hovered){
+    if(hovered)hovered.scale.setScalar(1);
+    hovered=h;
+    if(h){h.scale.setScalar(1.05);tip.textContent=h.userData.label;tip.classList.add('on');canvas.classList.add('pointing')}
+    else{tip.classList.remove('on');canvas.classList.remove('pointing')}
+  }
+  renderer.render(scene,camera);
+});
+</script>
+<noscript><style>#loader{display:none}</style></noscript>
+</body>
+</html>
