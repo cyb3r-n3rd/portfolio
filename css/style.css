@@ -45,6 +45,70 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .gate-note { margin: 0; font: 500 13px var(--ui); color: var(--dim); letter-spacing: .08em; }
 @keyframes breathe { 50% { opacity: .55; } }
 
+/* ---------- pan-frying loader ---------- */
+.pan { position: relative; width: 240px; height: 180px; margin-bottom: 6px; }
+.toss { position: absolute; left: 10px; right: 10px; bottom: 44px; animation: pan-toss 1.8s cubic-bezier(.3, .7, .3, 1) infinite; transform-origin: 20% 80%; }
+.kadai { display: block; width: 100%; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .6)); }
+.food { position: absolute; left: 50%; top: 4px; width: 0; height: 0; }
+.food i {
+  position: absolute; left: -9px; top: -8px; width: 18px; height: 14px; border-radius: 45% 55% 50% 40%;
+  background: radial-gradient(circle at 35% 35%, #ffd27a, #d9791e 70%, #9a4d10); box-shadow: 0 0 6px rgba(255, 150, 50, .5);
+  transform: translateX(var(--dx)); animation: hop 1.8s cubic-bezier(.3, .6, .4, 1) infinite; animation-delay: var(--d);
+}
+.flame { position: absolute; left: 50%; bottom: 26px; width: 120px; transform: translateX(-50%); display: flex; justify-content: space-between; }
+.flame i {
+  width: 12px; height: 22px; border-radius: 50% 50% 45% 45% / 65% 65% 35% 35%; transform-origin: bottom;
+  background: linear-gradient(#ffe7a0, #ff8a2a 45%, #3f8cff); filter: blur(.5px); box-shadow: 0 0 14px #ff8a2a;
+  animation: flicker-f .22s ease-in-out infinite alternate;
+}
+.flame i:nth-child(2n) { animation-duration: .17s; height: 18px; }
+.flame i:nth-child(3n) { animation-duration: .27s; }
+.stove { position: absolute; left: 50%; bottom: 10px; width: 170px; height: 16px; transform: translateX(-50%); border-radius: 4px; background: linear-gradient(#3b3847, #1d1b24); }
+.steam { position: absolute; left: 50%; top: 0; width: 120px; height: 90px; transform: translateX(-50%); }
+.steam i {
+  position: absolute; bottom: 0; width: 20px; height: 70px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, .35), transparent); filter: blur(4px);
+  animation: steam-rise 2.4s ease-out infinite;
+}
+.steam i:nth-child(1) { left: 20px; } .steam i:nth-child(2) { left: 52px; animation-delay: .8s; } .steam i:nth-child(3) { left: 84px; animation-delay: 1.6s; }
+@keyframes pan-toss {
+  0%, 30%, 100% { transform: rotate(0) translateY(0); }
+  40% { transform: rotate(-7deg) translateY(4px); }
+  52% { transform: rotate(5deg) translateY(-8px); }
+  66% { transform: rotate(-1deg) translateY(0); }
+}
+@keyframes hop {
+  0%, 44% { transform: translate(var(--dx), 0) rotate(0); }
+  60% { transform: translate(calc(var(--dx) * .6), -64px) rotate(160deg); }
+  76% { transform: translate(var(--dx), 2px) rotate(330deg); }
+  84% { transform: translate(var(--dx), -3px) rotate(360deg); }
+  92%, 100% { transform: translate(var(--dx), 0) rotate(360deg); }
+}
+@keyframes flicker-f { from { transform: scaleY(.75) skewX(-4deg); opacity: .85; } to { transform: scaleY(1.15) skewX(4deg); opacity: 1; } }
+@keyframes steam-rise { 0% { transform: translateY(20px) scaleX(.6); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-50px) scaleX(1.4); opacity: 0; } }
+/* Start pressed: one big toss before the gate fades */
+.gate.go .toss { animation: pan-big .8s cubic-bezier(.3, .7, .3, 1) forwards; }
+.gate.go .food i { animation: hop-big .8s cubic-bezier(.2, .6, .4, 1) forwards; animation-delay: var(--d); }
+@keyframes pan-big { 30% { transform: rotate(-10deg) translateY(6px); } 55% { transform: rotate(8deg) translateY(-14px); } 100% { transform: rotate(0); } }
+@keyframes hop-big { 50% { transform: translate(calc(var(--dx) * 1.8), -140px) rotate(260deg); } 100% { transform: translate(var(--dx), 0) rotate(420deg); } }
+.gate-sub { margin: -10px 0 0; font: 600 13px var(--ui); color: var(--dim); letter-spacing: .12em; }
+
+/* ---------- vignette + sound ---------- */
+.vignette { position: fixed; inset: 0; z-index: 5; pointer-events: none;
+  background: radial-gradient(120% 95% at 50% 55%, transparent 55%, rgba(4, 2, 8, .55) 100%); }
+.sound {
+  position: fixed; right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); z-index: 25;
+  width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: rgba(255, 255, 255, .7);
+  background: rgba(20, 12, 28, .5); backdrop-filter: blur(6px); transition: opacity .6s, color .2s;
+}
+.sound:hover { color: #fff; }
+.sound svg { width: 20px; height: 20px; }
+.sound .cross { display: none; }
+.sound[aria-pressed="true"] .waves { display: none; }
+.sound[aria-pressed="true"] .cross { display: inline; }
+body:not(.ready) .sound { opacity: 0; pointer-events: none; }
+.flat .sound, .flat .vignette { display: none; }
+
 /* ---------- HUD ---------- */
 .hud {
   position: fixed; inset: 0 0 auto 0; z-index: 10; pointer-events: none;

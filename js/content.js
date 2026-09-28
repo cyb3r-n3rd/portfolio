@@ -5,6 +5,8 @@ export const profile = {
   handle: 'cyb3r_n3rd',
   role: 'Security Researcher',
   intro: "Hi, I'm Shivam.",
+  // Written on the ground in front of the stall.
+  roles: ['Security Researcher', 'Web App Pentester', 'Mobile & Hardware Hacker', 'CTF Player', 'Chai Enthusiast'],
   bio: [
     'I\'m a security researcher who spends most days taking things apart to see how they break: web apps, mobile apps and the hardware underneath them.',
     'Placeholder: a sentence or two about what drives you, the kind of targets you enjoy, and how you like to work with the teams whose systems you test.',

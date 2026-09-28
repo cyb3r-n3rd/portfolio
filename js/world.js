@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import * as T from './textures.js';
+import * as IN from './india.js';
 import { profile, projects } from './content.js';
 
 // Signpost boards → which section they open.
@@ -72,6 +73,7 @@ export function buildWorld(scene, renderer) {
   buildTV(root, updaters, clickables, screens);
   buildSignpost(root, updaters, clickables);
   buildProps(root, updaters);
+  IN.groundText(root, profile.name, profile.roles);
 
 
   return {
@@ -137,7 +139,7 @@ function buildShop(root, updaters, clickables, screens) {
 
   // Fascia + name sign
   g.add(rbox(3.62, .78, .2, std('#2a1730', .6, .1), 0, 2.8, .95, .04));
-  const signTex = T.shopSign("SHIVAM'S", profile.handle.toUpperCase());
+  const signTex = T.shopSign("SHIVAM'S", 'CHAI TAPRI');
   const sign = plane(3.4, .72, new THREE.MeshBasicMaterial({ map: signTex, toneMapped: false }), 0, 2.8, 1.052);
   sign.material.color.setScalar(1.1);
   g.add(sign);
@@ -157,19 +159,10 @@ function buildShop(root, updaters, clickables, screens) {
   awn.position.set(0, 2.3, 1.36);
   g.add(awn);
 
-  // Lanterns under the awning
-  const lanternCols = ['#ff4fa3', '#ffb020', '#ff4fa3'];
-  [-1.15, 0, 1.15].forEach((x, i) => {
-    const l = new THREE.Group();
-    l.add(cyl(.004, .004, .22, std('#111'), 0, .22, 0, 6));
-    const body = new THREE.Mesh(new THREE.SphereGeometry(.13, 20, 14), glow(lanternCols[i], 1.6));
-    body.scale.y = 1.25;
-    l.add(body);
-    l.add(cyl(.07, .07, .04, std('#222'), 0, .16, 0), cyl(.07, .07, .04, std('#222'), 0, -.16, 0));
-    l.position.set(x, 1.98, 1.3);
-    g.add(l);
-    updaters.push((t) => { l.rotation.z = Math.sin(t * 1.3 + i) * .05; });
-  });
+  // Hindi menu cards, marigold garland and nimbu-mirchi
+  IN.hindiPanels(g, updaters);
+  IN.garland(g);
+  IN.nimbuMirchi(g, updaters);
 
   // About monitor on the back wall
   const mon = new THREE.Group();
@@ -207,16 +200,9 @@ function buildShop(root, updaters, clickables, screens) {
     }
   }
 
-  // Counter props: ramen, chopsticks, a rubber duck (for debugging, obviously), keyboard
-  const noodle = std('#ffd98a', .6, 0);
-  [-1.1, .1].forEach((x) => {
-    const b = new THREE.Mesh(new THREE.SphereGeometry(.14, 24, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std('#d8384f', .35, 0, { side: THREE.DoubleSide }));
-    b.rotation.x = Math.PI; b.position.set(x, 1.23, .78);
-    g.add(b);
-    g.add(cyl(.13, .13, .01, noodle, x, 1.2, .78));
-    g.add(cyl(.006, .006, .34, std('#e9d3a8'), x + .04, 1.32, .78).rotateZ(1.1));
-    g.add(cyl(.006, .006, .34, std('#e9d3a8'), x + .06, 1.33, .76).rotateZ(1.2));
-  });
+  // Counter: kadai frying pakoras, chai kettle and kulhads, samosas, and a rubber duck (for debugging)
+  IN.kadaiStove(g, updaters);
+  IN.chaiSet(g, updaters);
   const duck = new THREE.Group();
   duck.add(new THREE.Mesh(new THREE.SphereGeometry(.09, 20, 14), std('#ffd23a', .3)).translateY(.08));
   duck.add(new THREE.Mesh(new THREE.SphereGeometry(.06, 20, 14), std('#ffd23a', .3)).translateY(.19).translateX(.04));
@@ -301,11 +287,11 @@ function buildRoof(root, updaters) {
     hoop.position.y = y; hoop.rotation.x = Math.PI / 2;
     tank.add(hoop);
   }
-  tank.position.set(-1.1, .1, -.8);
+  tank.position.set(1.3, .1, -.85);
   g.add(tank);
 
   // AC units with spinning fans
-  [[.95, -.85, 0], [1.4, -.05, -.4]].forEach(([x, z, ry], i) => {
+  [[1.45, .05, -.5]].forEach(([x, z, ry], i) => {
     const ac = new THREE.Group();
     ac.add(rbox(.7, .5, .45, std('#c9cfdc', .5, .2), 0, .25, 0, .04));
     ac.add(new THREE.Mesh(new THREE.CircleGeometry(.18, 24), std('#2a2a33', .6)).translateY(.25).translateZ(.231));
@@ -339,27 +325,14 @@ function buildRoof(root, updaters) {
   g.add(mast);
   updaters.push((t) => { beacon.visible = (t % 1.6) < .8; });
 
-  // Rooftop neon: a padlock on a board
-  const lock = new THREE.Group();
-  const neon = glow('#b6ff3b', 1.25);
-  const w = .62, h = .5, r = .09;
-  const body = [
-    V(-w / 2 + r, -h / 2, 0), V(w / 2 - r, -h / 2, 0), V(w / 2, -h / 2 + r, 0), V(w / 2, h / 2 - r, 0),
-    V(w / 2 - r, h / 2, 0), V(-w / 2 + r, h / 2, 0), V(-w / 2, h / 2 - r, 0), V(-w / 2, -h / 2 + r, 0),
-  ];
-  lock.add(tube(body, .024, neon, true, .2));
-  const shackle = [];
-  for (let i = 0; i <= 20; i++) { const a = Math.PI * i / 20; shackle.push(V(Math.cos(a) * .19, h / 2 + .04 + Math.sin(a) * .24, 0)); }
-  lock.add(tube([V(.19, h / 2, 0), ...shackle, V(-.19, h / 2, 0)], .024, neon));
-  const pinkNeon = glow('#ff4fa3', 2.6);
-  lock.add(tube([V(0, .02, 0), V(0, -.12, 0)], .026, pinkNeon));
-  lock.add(new THREE.Mesh(new THREE.SphereGeometry(.055, 16, 12), pinkNeon).translateY(.06));
-  lock.add(rbox(.9, 1.15, .05, std('#1b1440', .6, .2), 0, .17, -.07, .03));
-  lock.add(cyl(.025, .025, 1.0, darkMetal, -.3, -.75, -.12, 8), cyl(.025, .025, 1.0, darkMetal, .3, -.75, -.12, 8));
-  lock.position.set(.95, 1.45, .45);
-  lock.rotation.y = -.25;
-  g.add(lock);
-  updaters.push((t) => { neon.color.setRGB(.71, 1, .23).multiplyScalar(1.2 + Math.sin(t * 3) * .12); });
+  // Rooftop: neon chai glass wrapped in a holographic swirl, a sunset TV and a solar panel
+  IN.chaiNeon(g, updaters);
+  const holo = new THREE.Group();
+  holo.position.set(.95, .75, .4);
+  g.add(holo);
+  IN.hologram(holo, updaters);
+  IN.rooftopTV(g, updaters);
+  IN.solarPanel(g);
 
   // Pipes down the side wall
   const pipe = std('#8d97b5', .4, .6);
@@ -512,7 +485,7 @@ function buildSignpost(root, updaters, clickables) {
 
   const post = std('#2b2350', .4, .5);
   g.add(rbox(.42, .22, .42, std('#1b1535', .6, .3), 0, .11, 0, .05));
-  g.add(cyl(.075, .09, 4.3, post, 0, 2.3, 0, 16));
+  g.add(cyl(.075, .09, 4.3, post, 0, 2.15, 0, 16));
   g.add(cyl(.11, .11, .1, std('#ff4fa3', .4), 0, 1.0, 0));
 
   // Twin globe lamps
@@ -520,18 +493,39 @@ function buildSignpost(root, updaters, clickables) {
   const globes = [];
   [[-.62, '#ffa3ea'], [.62, '#fff2e6']].forEach(([x, col]) => {
     g.add(cyl(.05, .07, .12, post, x, 4.18, 0, 12));
-    const globe = new THREE.Mesh(new THREE.SphereGeometry(.26, 32, 20), glow(col, 2.2));
+    const globe = new THREE.Mesh(new THREE.SphereGeometry(.3, 32, 20), glow(col, 2.4));
     globe.position.set(x, 3.9, 0);
     g.add(globe);
     globes.push(globe);
   });
+  // Soft halos: the big bloom around the globes, even without post-processing.
+  globes.forEach((gl, i) => { const h = IN.halo(i ? '#ffe6f4' : '#ff8fe0', 1.9, .85); h.position.copy(gl.position); g.add(h); });
+  // Mast above the cross-arm with a cyan tip, and a bar of little LEDs
+  g.add(cyl(.03, .04, .9, post, 0, 4.7, 0, 10));
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(.045, 12, 8), glow('#5ff6ff', 2.5));
+  tip.position.y = 5.17; g.add(tip);
+  g.add(rbox(.9, .05, .05, post, 0, 4.5, 0, .02));
+  const leds = ['#ff4fa3', '#b6ff3b', '#ff4fa3', '#b6ff3b'].map((c, i) => {
+    const l = rbox(.07, .03, .02, glow(c, 2.2), -.3 + i * .2, 4.5, .035, .01); g.add(l); return l;
+  });
+  updaters.push((t) => leds.forEach((l, i) => { l.visible = Math.sin(t * 3 + i * 1.5) > -.6; }));
+  // Two small spotlights on the pole
+  [[-.2, '#5ff6ff'], [.2, '#ffb020']].forEach(([x, c]) => {
+    g.add(rbox(.16, .14, .12, std('#3a2e5e'), x, 3.72, .08, .02));
+    g.add(plane(.1, .08, glow(c, 2.2), x, 3.72, .142));
+  });
+  // Barcode sticker and a green sign, like a well-used city pole
+  g.add(rbox(.46, .46, .03, std('#ff7ad1'), .4, 3.02, .02, .01));
+  g.add(plane(.42, .42, new THREE.MeshBasicMaterial({ map: T.barcodeSticker(profile.handle), toneMapped: false }), .4, 3.02, .037));
+  g.add(rbox(.3, .3, .03, std('#4cff8a', .5, 0, { emissive: '#1f8a45', emissiveIntensity: .6 }), -.3, 2.98, .02, .02));
+
   // One pink light between the two globes.
   const lampLight = new THREE.PointLight('#ff6fcf', 16, 12, 1.4);
   lampLight.position.set(0, 3.6, .2);
   g.add(lampLight);
 
   // Status box on the pole
-  g.add(rbox(.34, .42, .18, std('#1fae63', .45, .1), 0, 3.35, .08, .04));
+  g.add(rbox(.34, .42, .18, std('#1fae63', .45, .1), 0, 3.35, .08, .04)); // OPEN box
   g.add(plane(.26, .12, new THREE.MeshBasicMaterial({ map: T.label('OPEN', { bg: '#062417', fg: '#b6ff3b', glow: '#b6ff3b', size: 110, w: 512, h: 240 }), toneMapped: false }), 0, 3.43, .175));
   g.add(plane(.26, .1, new THREE.MeshBasicMaterial({ map: T.label('24/7', { bg: '#062417', fg: '#ffffff', size: 100, w: 512, h: 200 }), toneMapped: false }), 0, 3.27, .175));
 
@@ -539,7 +533,7 @@ function buildSignpost(root, updaters, clickables) {
   const W = 1.35, H = .34;
   SECTIONS.forEach((sec, i) => {
     const sg = new THREE.Group();
-    sg.position.y = 2.85 - i * .47;
+    sg.position.y = 2.62 - i * .45;
     sg.rotation.y = (i % 2 ? -1 : 1) * (.15 + i * .05);
     g.add(sg);
     const x0 = sec.dir === 'right' ? .06 : -.06;

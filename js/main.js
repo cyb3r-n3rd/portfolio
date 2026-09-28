@@ -6,6 +6,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { buildWorld } from './world.js';
 import { mountUI } from './ui.js';
+import { audio } from './audio.js';
 
 const $ = (s) => document.querySelector(s);
 const root = document.documentElement;
@@ -22,9 +23,9 @@ const progress = (p, note) => {
 
 // Canvas textures need the web fonts before they're drawn.
 async function loadFonts() {
-  const faces = ['700 40px Quicksand', '600 40px Quicksand', '500 40px Quicksand', '40px "Press Start 2P"', '600 40px "JetBrains Mono"', '700 40px "JetBrains Mono"'];
+  const faces = ['800 40px "Baloo 2"', '700 40px Quicksand', '600 40px Quicksand', '500 40px Quicksand', '40px "Press Start 2P"', '600 40px "JetBrains Mono"', '700 40px "JetBrains Mono"'];
   const timeout = new Promise((r) => setTimeout(r, 4000));
-  await Promise.race([Promise.all(faces.map((f) => document.fonts.load(f))), timeout]);
+  await Promise.race([Promise.all([...faces.map((f) => document.fonts.load(f)), document.fonts.load('800 40px "Baloo 2"', 'चाय समोसा')]), timeout]);
 }
 
 let renderer = null;
@@ -88,7 +89,7 @@ async function start() {
   controls.enabled = false;
 
   const aspect = () => innerWidth / innerHeight;
-  const homeDistance = () => (aspect() < .8 ? 16.5 : aspect() < 1.2 ? 15 : 12.5);
+  const homeDistance = () => (aspect() < .8 ? 17.5 : aspect() < 1.2 ? 15.5 : 13.5);
   // Portrait screens get a wider lens so the whole stall fits.
   function applyLens() {
     camera.fov = aspect() < .8 ? 50 : 35;
@@ -104,7 +105,7 @@ async function start() {
 
   const homeDir = () => new THREE.Vector3(aspect() < .8 ? -.25 : -.42, .33, 1).normalize();
   // On portrait, frame the signpost and shop; the arcade is a drag away.
-  const homeTarget = () => (aspect() < .8 ? new THREE.Vector3(-1.3, 2.0, .5) : new THREE.Vector3(.3, 1.8, 0));
+  const homeTarget = () => (aspect() < .8 ? new THREE.Vector3(-1.3, 2.3, .5) : new THREE.Vector3(.3, 2.15, 0));
   const homePose = () => ({
     pos: homeTarget().addScaledVector(homeDir(), homeDistance()),
     target: homeTarget(),
@@ -117,8 +118,10 @@ async function start() {
 
   progress(.8, 'warming up the neon…');
   // Compile shaders in parallel where the GPU driver allows it, without freezing the page.
-  await renderer.compileAsync(scene, camera);
-  composer.render();
+  // Start compiling now but don't wait: the Start button appears right away and the
+  // shaders finish while the kadai animation plays. Start waits for it if clicked early.
+  let warm = false;
+  const warmedUp = renderer.compileAsync(scene, camera).then(() => { warm = true; composer.render(); });
 
   // State ---------------------------------------------------------------------------
   let state = 'gate'; // gate → intro → home ⇄ flying ⇄ viewing
@@ -192,6 +195,8 @@ async function start() {
     controls.enabled = false;
     controls.autoRotate = false;
     setHover(null);
+    audio.whoosh(1.9);
+    audio.ambientLevel(.01);
     flyTo(dockPose(id), 1.9, () => {
       state = 'viewing';
       body.classList.remove('flying');
@@ -209,6 +214,8 @@ async function start() {
     state = 'flying';
     body.classList.add('flying');
     const back = returnPose || homePose();
+    audio.whoosh(1.6);
+    audio.ambientLevel(.035, 1.5);
     setTimeout(() => flyTo(back, 1.6, () => {
       state = 'home';
       current = null;
@@ -227,7 +234,7 @@ async function start() {
     if (hovered === obj) return;
     if (hovered) hovered.userData.hover = false;
     hovered = obj;
-    if (hovered) hovered.userData.hover = true;
+    if (hovered) { hovered.userData.hover = true; if (hovered.userData.sign) audio.blip(); }
     canvas.classList.toggle('pointing', !!hovered);
   }
   function pick(e) {
@@ -278,6 +285,7 @@ async function start() {
   let idleSince = 0;
 
   renderer.setAnimationLoop(() => {
+    if (!warm) return; // nothing to see behind the gate yet; don't force a blocking compile
     const raw = clock.getDelta();
     const dt = Math.min(raw, .05);
     const t = clock.elapsedTime;
@@ -297,7 +305,17 @@ async function start() {
   $('#gate-bar').hidden = true;
   startBtn.hidden = false;
   startBtn.focus();
-  startBtn.addEventListener('click', () => {
+  const soundBtn = $('#sound');
+  const syncSound = () => { soundBtn.setAttribute('aria-pressed', String(audio.muted)); soundBtn.setAttribute('aria-label', audio.muted ? 'Unmute sound' : 'Mute sound'); };
+  syncSound();
+  soundBtn.addEventListener('click', () => { audio.init(); audio.setMuted(!audio.muted); syncSound(); });
+
+  startBtn.addEventListener('click', async () => {
+    // Pan hits the flame: sizzle and one big toss, then the gate fades.
+    audio.init();
+    audio.sizzle();
+    $('#gate').classList.add('go');
+    await Promise.all([warmedUp, new Promise((r) => setTimeout(r, reducedMotion ? 0 : 650))]);
     $('#gate').classList.add('gone');
     body.classList.add('ready');
     state = 'intro';

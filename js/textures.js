@@ -247,7 +247,7 @@ export function menuBoard() {
   ctx.textAlign = 'center'; ctx.fillStyle = '#ffd35a';
   ctx.font = `700 70px ${FONT_UI}`; ctx.fillText('MENU', 256, 100);
   ctx.textAlign = 'left'; ctx.font = `600 32px ${FONT_UI}`;
-  const items = [['xss soup', '0.00'], ['sqli noodles', "' OR 1"], ['rce ramen', 'root'], ['idor bowl', '#1337'], ['ssrf tea', '169.254'], ['uart buns', '115200']];
+  const items = [['cutting chai', '₹10'], ['xss samosa', '₹15'], ['sqli vada pav', "' OR 1"], ['rce pakora', 'root'], ['idor lassi', '#1337'], ['uart bun maska', '115200']];
   items.forEach(([name, price], i) => {
     const y = 190 + i * 88;
     ctx.fillStyle = '#f2f2f2'; ctx.fillText(name, 44, y);
@@ -448,4 +448,89 @@ export function tvScreen() {
     ctx.fillStyle = 'rgba(0,0,0,.25)';
     for (let sy = 0; sy < 600; sy += 4) ctx.fillRect(0, sy, 800, 2);
   }, 4);
+}
+
+// ---------------------------------------------------------------------------
+// v3: the Indian chai stall
+
+export const FONT_HINDI = '"Baloo 2", "Noto Sans Devanagari", system-ui, sans-serif';
+
+/** Glowing green menu panel with a Hindi dish name and its English below. */
+export function hindiPanel(hindi, english) {
+  const [c, ctx] = canvas(256, 320);
+  const g = ctx.createRadialGradient(128, 150, 20, 128, 160, 200);
+  g.addColorStop(0, '#c8ffd6'); g.addColorStop(1, '#5fe39a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 320);
+  ctx.strokeStyle = 'rgba(8,60,30,.5)'; ctx.lineWidth = 8; ctx.strokeRect(10, 10, 236, 300);
+  ctx.fillStyle = '#0b4a26'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  fitFont(ctx, hindi, 800, 118, FONT_HINDI, 210);
+  ctx.fillText(hindi, 128, 150);
+  ctx.font = `700 30px ${FONT_UI}`; ctx.fillStyle = 'rgba(11,74,38,.8)';
+  ctx.fillText(english, 128, 262);
+  return toTexture(c);
+}
+
+/** Rooftop TV: a looping sunset over the sea with a city skyline. */
+export function sunsetTV() {
+  const r = rng(51);
+  const skyline = [];
+  for (let x = 0; x < 640;) { const w = 18 + r() * 40; skyline.push([x, w, 30 + r() * 110]); x += w + 2; }
+  return animated(640, 400, (ctx, t) => {
+    const sky = ctx.createLinearGradient(0, 0, 0, 260);
+    sky.addColorStop(0, '#2b1b5e'); sky.addColorStop(.55, '#ff6f61'); sky.addColorStop(1, '#ffc46b');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, 640, 260);
+    const sunY = 205 + Math.sin(t * .2) * 6;
+    ctx.fillStyle = '#fff1b8'; ctx.shadowColor = '#ffd27a'; ctx.shadowBlur = 40;
+    ctx.beginPath(); ctx.arc(420, sunY, 46, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+    ctx.fillStyle = '#1d1233';
+    for (const [x, w, h] of skyline) ctx.fillRect(x, 260 - h * (x > 300 && x < 520 ? .45 : 1), w, h);
+    // a dome and a couple of palms, for the seaside-city feel
+    ctx.beginPath(); ctx.arc(120, 170, 26, Math.PI, 0); ctx.fill(); ctx.fillRect(94, 170, 52, 90);
+    const sea = ctx.createLinearGradient(0, 260, 0, 400);
+    sea.addColorStop(0, '#ff8a5c'); sea.addColorStop(1, '#3a1f5c');
+    ctx.fillStyle = sea; ctx.fillRect(0, 260, 640, 140);
+    ctx.fillStyle = 'rgba(255,236,180,.8)';
+    for (let i = 0; i < 18; i++) {
+      const y = 270 + i * 7, w = (60 - i * 2) * (1 + .25 * Math.sin(t * 3 + i));
+      ctx.fillRect(420 - w / 2 + Math.sin(t * 2 + i) * 8, y, w, 2);
+    }
+    ctx.fillStyle = 'rgba(0,0,0,.18)';
+    for (let y = 0; y < 400; y += 4) ctx.fillRect(0, y, 640, 1);
+  }, 12);
+}
+
+/** Name and roles written on the ground, like chalk under a streetlight. */
+export function groundText(name, lines) {
+  const [c, ctx] = canvas(2048, 1100);
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `700 230px ${FONT_UI}`;
+  ctx.fillText(name, 40, 250);
+  ctx.font = `600 96px ${FONT_UI}`;
+  ctx.fillStyle = 'rgba(255,255,255,.82)';
+  lines.forEach((l, i) => ctx.fillText(l, 60, 420 + i * 130));
+  return toTexture(c);
+}
+
+/** Square sticker with a barcode and the handle. */
+export function barcodeSticker(handle) {
+  const [c, ctx] = canvas(256, 256);
+  ctx.fillStyle = '#ff7ad1'; ctx.fillRect(0, 0, 256, 256);
+  ctx.fillStyle = '#fff4fb'; ctx.fillRect(22, 22, 212, 212);
+  const r = rng(9);
+  ctx.fillStyle = '#16122b';
+  for (let x = 50; x < 206;) { const w = 2 + (r() * 7 | 0); ctx.fillRect(x, 50, w, 110); x += w + 2 + (r() * 5 | 0); }
+  ctx.font = `700 26px ${FONT_MONO}`; ctx.textAlign = 'center';
+  ctx.fillText(handle, 128, 200);
+  return toTexture(c);
+}
+
+/** Soft round glow for sprites (lamp halos, flames). */
+export function glowSprite() {
+  const [c, ctx] = canvas(128, 128);
+  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.25, 'rgba(255,255,255,.55)');
+  g.addColorStop(.6, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
+  return toTexture(c);
 }

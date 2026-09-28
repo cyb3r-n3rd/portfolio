@@ -1,6 +1,6 @@
 # portfolio
 
-Interactive 3D portfolio for **Shivam Verma (cyb3r_n3rd)**: a little neon stall floating in the dark that you can orbit 360°. Click a sign (or an object) and the camera flies into that object's screen:
+Interactive 3D portfolio for **Shivam Verma (cyb3r_n3rd)**: a little neon Indian chai tapri floating in the dark that you can orbit 360°, with a kadai frying pakoras on the counter, Hindi menu cards, a marigold garland and a holographic chai-steam swirl on the roof. Click a sign (or an object) and the camera flies into that object's screen:
 
 | Section | Where it lives |
 | --- | --- |
@@ -13,7 +13,7 @@ Static site, no build step. [Three.js](https://threejs.org) (MIT) is loaded from
 
 ## Edit the content
 
-All text is in **`js/content.js`**: profile and bio, socials, skills, experience, projects (vending slots), research write-ups and contact channels.
+All text is in **`js/content.js`**: profile, bio, the roles written on the ground, socials, skills, experience, projects (vending slots), research write-ups and contact channels.
 
 ## Run locally
 
@@ -29,6 +29,8 @@ Then open <http://localhost:5173>. Add `?debug` to expose `window.__app` in the 
 | --- | --- |
 | `js/content.js` | All portfolio text |
 | `js/world.js` | The diorama: stall, signpost, vending machine, arcade, TV, roof clutter, lights |
+| `js/india.js` | Chai-stall details: Hindi menu cards, garland, nimbu-mirchi, kadai with flame and steam, chai set, rooftop neon, hologram, sunset TV, ground lettering |
+| `js/audio.js` | Synthesized sound (Web Audio): intro sizzle, ambient kadai, fly whoosh, hover blip; mute button, remembered per visitor |
 | `js/textures.js` | Every texture, drawn at runtime on `<canvas>` (signs, screens, walls, mural) |
 | `js/ui.js` | The four screen interfaces, built from `content.js` |
 | `js/main.js` | Renderer, bloom, orbit controls, fly-to-screen, pinning the UI over the 3D screen |
@@ -38,7 +40,9 @@ Then open <http://localhost:5173>. Add `?debug` to expose `window.__app` in the 
 
 All models and textures are original: geometry is built from Three.js primitives and textures are drawn procedurally, so there are no third-party model or image files. Any assets added later should be CC0 (for example from [Kenney](https://kenney.nl/assets)); list them here.
 
-Fonts are loaded from Google Fonts: Quicksand, Press Start 2P and JetBrains Mono, all under the SIL Open Font License (free to use, but not CC0).
+Sounds are synthesized in the browser, so there are no audio files.
+
+Fonts are loaded from Google Fonts: Quicksand, Baloo 2 (Devanagari), Press Start 2P and JetBrains Mono, all under the SIL Open Font License (free to use, but not CC0).
 
 ## Behaviour
 
