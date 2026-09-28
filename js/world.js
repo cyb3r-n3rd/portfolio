@@ -73,7 +73,7 @@ export function buildWorld(scene, renderer) {
   buildTV(root, updaters, clickables, screens);
   buildSignpost(root, updaters, clickables);
   buildProps(root, updaters);
-  IN.groundText(root, profile.name, profile.roles);
+  IN.groundText(root, profile.name, profile.roles, updaters);
   IN.ledTicker(root, updaters, [['XSS', '1337.00', 1], ['SQLI', '404.04', 0], ['RCE', '9.8', 1], ['IDOR', '101.10', 1], ['CHAI', '10.00', 1], ['SSRF', '169.25', 0], ['BUGS', '99+', 1], ['CVE', '2022', 1]]);
 
 
@@ -246,23 +246,8 @@ function buildShop(root, updaters, clickables, screens) {
   backLight.position.set(.95, 1.95, -1.9);
   g.add(backLight);
 
-  // Vertical "HACK" sign on the right corner
-  const [vc, vctx] = T.canvas(256, 1024);
-  vctx.fillStyle = '#1b1440'; vctx.fillRect(0, 0, 256, 1024);
-  vctx.strokeStyle = '#b6ff3b'; vctx.lineWidth = 10; vctx.shadowColor = '#b6ff3b'; vctx.shadowBlur = 20;
-  vctx.strokeRect(18, 18, 220, 988);
-  vctx.fillStyle = '#eaffc4'; vctx.font = `120px ${T.FONT_PIXEL}`; vctx.textAlign = 'center'; vctx.textBaseline = 'middle';
-  'HACK'.split('').forEach((ch, i) => vctx.fillText(ch, 128, 150 + i * 240));
-  const vs = new THREE.Group();
-  vs.add(rbox(.4, 1.5, .1, std('#1b1440', .6), 0, 0, 0, .03));
-  const vsMat = new THREE.MeshBasicMaterial({ map: T.toTexture(vc), toneMapped: false });
-  const vsFace = plane(.38, 1.46, vsMat, 0, 0, .052);
-  const vsBack = plane(.38, 1.46, vsMat, 0, 0, -.052); vsBack.rotation.y = Math.PI;
-  vs.add(vsFace, vsBack);
-  vs.add(rbox(.5, .05, .05, std('#2a2240', .4, .5), -.25, .8, 0, .02));
-  vs.position.set(2.0, 2.35, .98);
-  vs.rotation.y = -Math.PI / 2 + .25;
-  g.add(vs);
+  // Vertical neon billboard by the lamp post
+  IN.verticalBillboard(g, updaters, 'CHAI');
 }
 
 // Roof clutter ---------------------------------------------------------------------

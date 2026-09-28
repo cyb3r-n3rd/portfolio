@@ -69,7 +69,7 @@ async function start() {
   await new Promise((r) => setTimeout(r, 20));
   const world = buildWorld(scene, renderer);
 
-  const target = new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: small ? 2 : 4 });
+  const target = new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: devicePixelRatio >= 2 ? 2 : 4 }); // hi-DPI needs less MSAA
   const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .32, .1, .92);
@@ -80,10 +80,10 @@ async function start() {
   const controls = new OrbitControls(camera, canvas);
   controls.target.set(.3, 1.8, 0);
   controls.enableDamping = true;
-  controls.dampingFactor = .06;
+  controls.dampingFactor = .12;
   controls.enablePan = false;
-  controls.rotateSpeed = .55;
-  controls.zoomSpeed = .7;
+  controls.rotateSpeed = 1.0;
+  controls.zoomSpeed = 1.0;
   controls.minPolarAngle = .35;
   controls.maxPolarAngle = 1.48;
   controls.autoRotateSpeed = .35;
@@ -285,10 +285,24 @@ async function start() {
   const clock = new THREE.Clock();
   let idleSince = 0;
 
+  // Adaptive resolution: keep dragging smooth on slower GPUs by trading a little
+  // sharpness for frame rate, and win it back when there's headroom.
+  const maxPR = Math.min(devicePixelRatio, 2);
+  let pr = maxPR, frames = 0, elapsed = 0;
+  function adaptResolution(raw) {
+    frames++; elapsed += raw;
+    if (elapsed < 1) return;
+    const fps = frames / elapsed;
+    frames = 0; elapsed = 0;
+    const next = fps < 45 ? Math.max(1, pr - .25) : fps > 58 ? Math.min(maxPR, pr + .25) : pr;
+    if (next !== pr) { pr = next; renderer.setPixelRatio(pr); composer.setPixelRatio(pr); }
+  }
+
   renderer.setAnimationLoop(() => {
     if (!warm) return; // nothing to see behind the gate yet; don't force a blocking compile
     const raw = clock.getDelta();
     const dt = Math.min(raw, .05);
+    adaptResolution(raw);
     const t = clock.elapsedTime;
     stepTween(Math.min(raw, .25));
     if (state === 'home') {

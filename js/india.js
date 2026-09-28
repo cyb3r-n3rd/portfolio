@@ -330,14 +330,24 @@ export function solarPanel(g) {
 // Ground -----------------------------------------------------------------------------------
 
 /** Name and roles written on the floor in front of the stall. */
-export function groundText(root, name, lines) {
+export function groundText(root, name, lines, updaters) {
   const tex = T.groundText(name, lines);
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(3.7, 3.7 * 1100 / 2048), new THREE.MeshBasicMaterial({
-    map: tex, transparent: true, depthWrite: false, fog: false, toneMapped: false, color: new THREE.Color(.8, .78, .86),
-  }));
-  m.rotation.set(-Math.PI / 2, 0, -.4);
-  m.position.set(2.2, .01, 3.25);
-  root.add(m);
+  const geo = new THREE.PlaneGeometry(3.7, 3.7 * 1100 / 2048);
+  // Yaw to face the default camera, then lie (almost) flat.
+  const place = (m, y, tilt) => { m.rotation.order = 'YXZ'; m.rotation.set(-Math.PI / 2 + tilt, -.4, 0); m.position.set(2.2, y, 3.25); };
+  // The text floats a little above the floor, tilted slightly toward the viewer...
+  const text = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, fog: false, toneMapped: false, color: new THREE.Color(1.05, 1.02, 1.1) }));
+  place(text, .32, .14);
+  // ...and casts a soft dark copy of itself onto the floor.
+  const shadow = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: T.groundText(name, lines, true), transparent: true, depthWrite: false, fog: false, color: '#000000', opacity: .6 }));
+  place(shadow, .012, 0);
+  shadow.position.x += .1; shadow.position.z -= .08;
+  root.add(shadow, text);
+  updaters.push((t) => {
+    const f = Math.sin(t * 1.2) * .04;
+    text.position.y = .32 + f;
+    shadow.material.opacity = .6 - f * 2;
+  });
 }
 
 // Side panel ---------------------------------------------------------------------------
@@ -378,4 +388,41 @@ export function ledTicker(root, updaters, items) {
   b.rotation.y = -.5;
   root.add(b);
   updaters.push((t) => { tex.offset.x = (t * .05) % 1; });
+}
+
+// Billboards ------------------------------------------------------------------------------
+
+/** Tall hanging billboard: green neon letters, pink tube frame, little roof cap. */
+export function verticalBillboard(g, updaters, word) {
+  const W = .5, H = 1.75;
+  const [c, ctx] = T.canvas(256, 1024);
+  ctx.fillStyle = '#10141c'; ctx.fillRect(0, 0, 256, 1024);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = `150px ${T.FONT_PIXEL}`;
+  const step = 1024 / (word.length + .4);
+  word.split('').forEach((ch, i) => {
+    const y = step * (i + .7);
+    ctx.shadowColor = '#3dff8a'; ctx.shadowBlur = 30; ctx.fillStyle = '#3dff8a'; ctx.fillText(ch, 128, y);
+    ctx.shadowBlur = 6; ctx.fillStyle = '#d9ffe6'; ctx.fillText(ch, 128, y);
+  });
+  const b = new THREE.Group();
+  b.add(new THREE.Mesh(new THREE.BoxGeometry(W + .08, H + .08, .1), lam('#1c1826')));
+  const mat = new THREE.MeshBasicMaterial({ map: T.toTexture(c), toneMapped: false });
+  const front = new THREE.Mesh(new THREE.PlaneGeometry(W, H), mat); front.position.z = .051;
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(W, H), mat); back.position.z = -.051; back.rotation.y = Math.PI;
+  b.add(front, back);
+  // double neon frame: pink outside, cyan inside
+  const frame = (w, h, z, col) => tube([V(-w / 2, -h / 2, z), V(w / 2, -h / 2, z), V(w / 2, h / 2, z), V(-w / 2, h / 2, z)], .014, glow(col, 2.2), true, 0);
+  const pink = [frame(W + .1, H + .1, .07, '#ff4fcf'), frame(W + .1, H + .1, -.07, '#ff4fcf')];
+  b.add(...pink, frame(W - .02, H - .02, .06, '#2af3ff'));
+  // roof cap
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(.02, .42, .22, 4, 1), lam('#5b3f8f'));
+  cap.rotation.y = Math.PI / 4; cap.scale.z = .4; cap.position.y = H / 2 + .16;
+  b.add(cap);
+  b.add(new THREE.Mesh(new THREE.BoxGeometry(.5, .04, .04), lam('#3b3558')).translateX(.3).translateY(H / 2 - .1));
+  b.position.set(-2.12, 2.2, 1.25);
+  b.rotation.y = .5;
+  g.add(b);
+  const pinkMat = pink[0].material;
+  updaters.push((t) => { const on = (t % 7) > .25 || Math.sin(t * 60) > 0; pinkMat.color.set('#ff4fcf').multiplyScalar(on ? 2.2 : .6); pink[1].material = pinkMat; });
 }

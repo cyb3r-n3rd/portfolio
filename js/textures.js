@@ -74,20 +74,22 @@ export function shopSign(top, main) {
   const g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, '#1b1440'); g.addColorStop(1, '#0d0a22');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#ffd35a';
-  const dot = (x, y) => { ctx.shadowColor = '#ffb020'; ctx.shadowBlur = 18; ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fill(); };
-  for (let x = 30; x < W; x += 60) { dot(x, 26); dot(x, H - 26); }
-  for (let y = 86; y < H - 60; y += 60) { dot(26, y); dot(W - 26, y); }
-  ctx.shadowBlur = 0;
+  // Three parallel neon tubes around the edge, like a lit billboard.
+  ctx.lineJoin = 'round';
+  [[22, '#2af3ff'], [46, '#2af3ff'], [70, '#ff4fcf']].forEach(([inset, col]) => {
+    ctx.shadowColor = col; ctx.shadowBlur = 22; ctx.strokeStyle = col; ctx.lineWidth = 9;
+    ctx.beginPath(); ctx.roundRect(inset, inset, W - inset * 2, H - inset * 2, 18); ctx.stroke();
+    ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 3; ctx.stroke();
+  });
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillStyle = '#2af3ff'; ctx.shadowColor = '#2af3ff'; ctx.shadowBlur = 24;
   ctx.font = `700 92px ${FONT_UI}`;
-  ctx.fillText(top, W / 2, 128);
+  ctx.fillText(top, W / 2, 150);
   const grad = ctx.createLinearGradient(0, 240, 0, 400);
   grad.addColorStop(0, '#ffe9f6'); grad.addColorStop(.5, '#ff4fa3'); grad.addColorStop(1, '#d4238a');
   ctx.fillStyle = grad; ctx.shadowColor = '#ff4fa3'; ctx.shadowBlur = 40;
   fitFont(ctx, main, 400, 150, FONT_PIXEL, W - 220);
-  ctx.fillText(main, W / 2, 330);
+  ctx.fillText(main, W / 2, 335);
   return toTexture(c);
 }
 
@@ -500,8 +502,9 @@ export function sunsetTV() {
 }
 
 /** Name and roles written on the ground, like chalk under a streetlight. */
-export function groundText(name, lines) {
+export function groundText(name, lines, blurred = false) {
   const [c, ctx] = canvas(2048, 1100);
+  if (blurred) ctx.filter = 'blur(14px)'; // soft shadow copy (browsers without canvas filters get a crisp one)
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = '#ffffff';
   ctx.font = `700 230px ${FONT_UI}`;
