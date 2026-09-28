@@ -67,29 +67,33 @@ export function arrowSign(text, color, dir) {
   return toTexture(c);
 }
 
-/** The shop's name board: small line over a big handle, with a bulb border. */
+/** The shop's name billboard: cyan tube lines behind bold pink pixel lettering. */
 export function shopSign(top, main) {
   const W = 2048, H = 512;
   const [c, ctx] = canvas(W, H);
   const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, '#1b1440'); g.addColorStop(1, '#0d0a22');
+  g.addColorStop(0, '#1a1030'); g.addColorStop(1, '#0c0818');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  // Three parallel neon tubes around the edge, like a lit billboard.
-  ctx.lineJoin = 'round';
-  [[22, '#2af3ff'], [46, '#2af3ff'], [70, '#ff4fcf']].forEach(([inset, col]) => {
-    ctx.shadowColor = col; ctx.shadowBlur = 22; ctx.strokeStyle = col; ctx.lineWidth = 9;
-    ctx.beginPath(); ctx.roundRect(inset, inset, W - inset * 2, H - inset * 2, 18); ctx.stroke();
-    ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 3; ctx.stroke();
-  });
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#2af3ff'; ctx.shadowColor = '#2af3ff'; ctx.shadowBlur = 24;
-  ctx.font = `700 92px ${FONT_UI}`;
-  ctx.fillText(top, W / 2, 150);
-  const grad = ctx.createLinearGradient(0, 240, 0, 400);
-  grad.addColorStop(0, '#ffe9f6'); grad.addColorStop(.5, '#ff4fa3'); grad.addColorStop(1, '#d4238a');
-  ctx.fillStyle = grad; ctx.shadowColor = '#ff4fa3'; ctx.shadowBlur = 40;
-  fitFont(ctx, main, 400, 150, FONT_PIXEL, W - 220);
-  ctx.fillText(main, W / 2, 335);
+  // horizontal neon tubes running behind the text
+  for (let i = 0; i < 6; i++) {
+    const y = 70 + i * 74;
+    ctx.shadowColor = '#2af3ff'; ctx.shadowBlur = 18; ctx.strokeStyle = 'rgba(42,243,255,.55)'; ctx.lineWidth = 7;
+    ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W - 60, y); ctx.stroke();
+    ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(220,255,255,.45)'; ctx.lineWidth = 2; ctx.stroke();
+  }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  // small top line
+  ctx.font = `700 78px ${FONT_UI}`;
+  ctx.lineWidth = 14; ctx.strokeStyle = '#0c0818'; ctx.strokeText(top, W / 2, 110);
+  ctx.fillStyle = '#e9fdff'; ctx.shadowColor = '#2af3ff'; ctx.shadowBlur = 16; ctx.fillText(top, W / 2, 110);
+  // main lettering: dark keyline, white outline, pink fill, soft pink glow
+  fitFont(ctx, main, 400, 170, FONT_PIXEL, W - 260);
+  const y = 318;
+  ctx.shadowBlur = 0; ctx.lineWidth = 34; ctx.strokeStyle = '#0c0818'; ctx.strokeText(main, W / 2, y);
+  ctx.lineWidth = 14; ctx.strokeStyle = '#fff4fb'; ctx.strokeText(main, W / 2, y);
+  const grad = ctx.createLinearGradient(0, y - 80, 0, y + 80);
+  grad.addColorStop(0, '#ff9ae0'); grad.addColorStop(1, '#e0268f');
+  ctx.shadowColor = '#ff4fcf'; ctx.shadowBlur = 36; ctx.fillStyle = grad; ctx.fillText(main, W / 2, y);
   return toTexture(c);
 }
 
@@ -303,7 +307,7 @@ export function bakedFloor(size) {
   shadow(14, .7, disc(-3.3, 1.55, .35));            // signpost base
   shadow(14, .6, rect(-2.3, -.9, .7, 1.4));         // crates
   for (const x of [-1.1, 0, 1.1]) shadow(10, .55, disc(x, 1.38, .22)); // stools
-  shadow(10, .5, rect(-1.35, 1.95, .7, .45, -.3));   // menu board
+  shadow(10, .5, rect(-2.2, .55, .7, .45, -.95));   // menu board
   shadow(10, .5, disc(1.95, 1.6, .22));             // plant
   shadow(14, .6, rect(2.3, -1.2, .9, .6));          // bin bags
 

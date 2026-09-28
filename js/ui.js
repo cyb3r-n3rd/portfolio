@@ -77,7 +77,7 @@ function aboutPanel() {
         <h1>Experience</h1>
         <ol class="timeline">${experience.map((e) => `
           <li><span class="when">${esc(e.when)}</span>
-            <div><h2>${esc(e.title)} <em>· ${esc(e.where)}</em></h2><p>${esc(e.text)}</p></div></li>`).join('')}
+            <div><h2>${esc(e.title)}${e.where ? ` <em>· ${esc(e.where)}</em>` : ''}</h2>${e.text ? `<p>${esc(e.text)}</p>` : ''}</div></li>`).join('')}
         </ol>
       </div>
     </div>
@@ -121,12 +121,14 @@ function researchPanel() {
     <div class="scroll">
       <p class="tv-prompt">$ ls ~/writeups</p>
       <h1>RESEARCH</h1>
-      <ol class="tv-list">${research.map((r) => `
-        <li><a href="${esc(r.link)}" target="_blank" rel="noopener">
+      ${research.map((g) => `
+      <h2 class="tv-group">## ${esc(g.group)}</h2>
+      <ol class="tv-list">${g.items.map((r) => `
+        <li>${r.link ? `<a href="${esc(r.link)}" target="_blank" rel="noopener">` : '<div class="tv-row">'}
           <span class="tv-date">${esc(r.date)}</span>
           <span class="tv-title">${esc(r.title)}</span>
-          <span class="tv-text">${esc(r.text)}</span></a></li>`).join('')}
-      </ol>
+          <span class="tv-text">${esc(r.text)}</span>${r.link ? '</a>' : '</div>'}</li>`).join('')}
+      </ol>`).join('')}
       <button class="tv-back" data-back type="button">[esc] cd ..</button>
     </div>
   </section>`;

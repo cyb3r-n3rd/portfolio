@@ -334,7 +334,7 @@ export function groundText(root, name, lines, updaters) {
   const tex = T.groundText(name, lines);
   const geo = new THREE.PlaneGeometry(3.7, 3.7 * 1100 / 2048);
   // Yaw to face the default camera, then lie (almost) flat.
-  const place = (m, y, tilt) => { m.rotation.order = 'YXZ'; m.rotation.set(-Math.PI / 2 + tilt, -.4, 0); m.position.set(2.2, y, 3.25); };
+  const place = (m, y, tilt) => { m.rotation.order = 'YXZ'; m.rotation.set(-Math.PI / 2 + tilt, -.4, 0); m.position.set(2.45, y, 4.35); };
   // The text floats a little above the floor, tilted slightly toward the viewer...
   const text = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, fog: false, toneMapped: false, color: new THREE.Color(1.05, 1.02, 1.1) }));
   place(text, .32, .14);
@@ -392,37 +392,57 @@ export function ledTicker(root, updaters, items) {
 
 // Billboards ------------------------------------------------------------------------------
 
-/** Tall hanging billboard: green neon letters, pink tube frame, little roof cap. */
+/** Rounded-rectangle outline as points (for neon tubes). */
+function roundedRect(w, h, r, z, seg = 6) {
+  const pts = [];
+  const corners = [[w / 2 - r, h / 2 - r, 0], [-w / 2 + r, h / 2 - r, Math.PI / 2], [-w / 2 + r, -h / 2 + r, Math.PI], [w / 2 - r, -h / 2 + r, Math.PI * 1.5]];
+  for (const [cx, cy, a0] of corners) for (let i = 0; i <= seg; i++) { const a = a0 + (i / seg) * Math.PI / 2; pts.push(V(cx + Math.cos(a) * r, cy + Math.sin(a) * r, z)); }
+  return pts;
+}
+export function neonFrame(w, h, r, z, color, k = 2.2, thick = .016) {
+  return tube(roundedRect(w, h, r, z), thick, glow(color, k), true, 0);
+}
+
+/** Tall billboard high on the corner: green neon letters, pink + cyan tubes, scalloped cap. */
 export function verticalBillboard(g, updaters, word) {
-  const W = .5, H = 1.75;
-  const [c, ctx] = T.canvas(256, 1024);
-  ctx.fillStyle = '#10141c'; ctx.fillRect(0, 0, 256, 1024);
+  const W = .52, H = .26 * word.length + .15;
+  const [c, ctx] = T.canvas(256, Math.round(256 * H / W));
+  const ch = c.height;
+  ctx.fillStyle = '#0b0f16'; ctx.fillRect(0, 0, 256, ch);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = `150px ${T.FONT_PIXEL}`;
-  const step = 1024 / (word.length + .4);
-  word.split('').forEach((ch, i) => {
-    const y = step * (i + .7);
-    ctx.shadowColor = '#3dff8a'; ctx.shadowBlur = 30; ctx.fillStyle = '#3dff8a'; ctx.fillText(ch, 128, y);
-    ctx.shadowBlur = 6; ctx.fillStyle = '#d9ffe6'; ctx.fillText(ch, 128, y);
+  ctx.font = `128px ${T.FONT_PIXEL}`;
+  const step = (ch - 40) / word.length;
+  word.split('').forEach((letter, i) => {
+    const y = 20 + step * (i + .5);
+    ctx.shadowColor = '#2bff88'; ctx.shadowBlur = 34; ctx.fillStyle = '#2bff88'; ctx.fillText(letter, 128, y);
+    ctx.shadowBlur = 8; ctx.fillStyle = '#e6fff0'; ctx.fillText(letter, 128, y);
   });
   const b = new THREE.Group();
-  b.add(new THREE.Mesh(new THREE.BoxGeometry(W + .08, H + .08, .1), lam('#1c1826')));
+  // bevelled cabinet
+  b.add(new THREE.Mesh(new THREE.BoxGeometry(W + .16, H + .16, .14), lam('#2a2f3a')));
+  b.add(new THREE.Mesh(new THREE.BoxGeometry(W + .04, H + .04, .16), lam('#161a22')));
   const mat = new THREE.MeshBasicMaterial({ map: T.toTexture(c), toneMapped: false });
-  const front = new THREE.Mesh(new THREE.PlaneGeometry(W, H), mat); front.position.z = .051;
-  const back = new THREE.Mesh(new THREE.PlaneGeometry(W, H), mat); back.position.z = -.051; back.rotation.y = Math.PI;
+  const front = new THREE.Mesh(new THREE.PlaneGeometry(W, H), mat); front.position.z = .081;
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(W, H), mat); back.position.z = -.081; back.rotation.y = Math.PI;
   b.add(front, back);
-  // double neon frame: pink outside, cyan inside
-  const frame = (w, h, z, col) => tube([V(-w / 2, -h / 2, z), V(w / 2, -h / 2, z), V(w / 2, h / 2, z), V(-w / 2, h / 2, z)], .014, glow(col, 2.2), true, 0);
-  const pink = [frame(W + .1, H + .1, .07, '#ff4fcf'), frame(W + .1, H + .1, -.07, '#ff4fcf')];
-  b.add(...pink, frame(W - .02, H - .02, .06, '#2af3ff'));
-  // roof cap
-  const cap = new THREE.Mesh(new THREE.CylinderGeometry(.02, .42, .22, 4, 1), lam('#5b3f8f'));
-  cap.rotation.y = Math.PI / 4; cap.scale.z = .4; cap.position.y = H / 2 + .16;
+  // neon: pink outside, cyan inside, on both faces
+  const pinkF = neonFrame(W + .24, H + .24, .07, .09, '#ff4fcf'), pinkB = neonFrame(W + .24, H + .24, .07, -.09, '#ff4fcf');
+  pinkB.material = pinkF.material;
+  b.add(pinkF, pinkB, neonFrame(W + .06, H + .06, .04, .095, '#2af3ff', 2, .01), neonFrame(W + .06, H + .06, .04, -.095, '#2af3ff', 2, .01));
+  // scalloped roof cap
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(.03, .5, .26, 4, 1), lam('#4e3a86'));
+  cap.rotation.y = Math.PI / 4; cap.scale.z = .45; cap.position.y = H / 2 + .25;
   b.add(cap);
-  b.add(new THREE.Mesh(new THREE.BoxGeometry(.5, .04, .04), lam('#3b3558')).translateX(.3).translateY(H / 2 - .1));
-  b.position.set(-1.92, 2.2, 1.05);
-  b.rotation.y = .5;
+  for (let i = 0; i < 7; i++) {
+    const tooth = new THREE.Mesh(new THREE.ConeGeometry(.045, .09, 4), lam('#ff5fd0', { emissive: '#ff5fd0', emissiveIntensity: .5 }));
+    tooth.rotation.x = Math.PI; tooth.position.set(-.33 + i * .11, H / 2 + .08, .2);
+    b.add(tooth);
+  }
+  // cables down to the wall
+  for (const x of [-.12, .12]) b.add(tube([V(x, -H / 2 - .08, 0), V(x + .05, -H / 2 - .35, -.1), V(x + .15, -H / 2 - .5, -.25)], .012, lam('#111018')));
+  b.position.set(-1.6, 4.62, -1.05);
+  b.rotation.y = .45;
   g.add(b);
-  const pinkMat = pink[0].material;
-  updaters.push((t) => { const on = (t % 7) > .25 || Math.sin(t * 60) > 0; pinkMat.color.set('#ff4fcf').multiplyScalar(on ? 2.2 : .6); pink[1].material = pinkMat; });
+  const pm = pinkF.material;
+  updaters.push((t) => { const on = (t % 8) > .3 || Math.sin(t * 60) > 0; pm.color.set('#ff4fcf').multiplyScalar(on ? 2.2 : .5); });
 }

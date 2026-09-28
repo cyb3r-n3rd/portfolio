@@ -247,7 +247,8 @@ body.viewing .ui { opacity: 1; visibility: visible; pointer-events: auto; }
 .tv-prompt { margin: 0; color: #9dffcf; }
 .p-tv h1 { font: 700 2.4em/1 var(--mono); margin: .2em 0 .5em; text-shadow: 0 0 .4em rgba(182, 255, 59, .7); letter-spacing: .04em; }
 .tv-list { list-style: none; margin: 0; padding: 0; }
-.tv-list a { display: grid; grid-template-columns: 4em 1fr; gap: .1em 1em; padding: .55em .5em; text-decoration: none; border-left: 2px solid transparent; }
+.tv-group { font: 700 1em var(--mono); color: #b6ff3b; margin: 1.1em 0 .3em; }
+.tv-list a, .tv-list .tv-row { display: grid; grid-template-columns: 4em 1fr; gap: .1em 1em; padding: .55em .5em; text-decoration: none; border-left: 2px solid transparent; }
 .tv-list a:hover, .tv-list a:focus-visible { background: rgba(182, 255, 59, .1); border-left-color: #b6ff3b; outline: none; }
 .tv-date { color: #6ccf9a; grid-row: span 2; }
 .tv-title { color: #eaffc4; font-weight: 700; }

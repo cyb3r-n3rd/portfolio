@@ -144,6 +144,10 @@ function buildShop(root, updaters, clickables, screens) {
   const sign = plane(3.4, .72, new THREE.MeshBasicMaterial({ map: signTex, toneMapped: false }), 0, 2.8, 1.052);
   sign.material.color.setScalar(1.1);
   g.add(sign);
+  // real neon tubes around the billboard: pink outside, cyan inside
+  const outer = IN.neonFrame(3.52, .84, .08, 1.085, '#ff4fcf', 2.2, .022); outer.position.y = 2.8;
+  const inner = IN.neonFrame(3.3, .64, .05, 1.08, '#2af3ff', 2, .012); inner.position.y = 2.8;
+  g.add(outer, inner);
   // Faulty sign: dims for a beat every few seconds.
   let nextGlitch = 4;
   updaters.push((t) => {
@@ -247,7 +251,7 @@ function buildShop(root, updaters, clickables, screens) {
   g.add(backLight);
 
   // Vertical neon billboard by the lamp post
-  IN.verticalBillboard(g, updaters, 'CHAI');
+  IN.verticalBillboard(g, updaters, 'SECURITY');
 }
 
 // Roof clutter ---------------------------------------------------------------------
@@ -318,7 +322,6 @@ function buildRoof(root, updaters) {
   g.add(holo);
   IN.hologram(holo, updaters);
   IN.rooftopTV(g, updaters);
-  IN.solarPanel(g);
 
   // Pipes down the side wall
   const pipe = std('#8d97b5', .4, .6);
@@ -577,8 +580,8 @@ function buildProps(root, updaters) {
     const front = rbox(.05, 1.0, .05, frameMat, x, .5, .02, .02); front.rotation.x = -.16; menu.add(front);
     const back = rbox(.05, 1.0, .05, frameMat, x, .5, -.3, .02); back.rotation.x = .2; menu.add(back);
   }
-  menu.position.set(-1.35, G, 2.0);
-  menu.rotation.y = .3;
+  menu.position.set(-2.2, G, .55);
+  menu.rotation.y = .95;
   root.add(menu);
 
   // Crates
