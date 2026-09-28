@@ -420,7 +420,7 @@ export function verticalBillboard(g, updaters, word) {
   cap.rotation.y = Math.PI / 4; cap.scale.z = .4; cap.position.y = H / 2 + .16;
   b.add(cap);
   b.add(new THREE.Mesh(new THREE.BoxGeometry(.5, .04, .04), lam('#3b3558')).translateX(.3).translateY(H / 2 - .1));
-  b.position.set(-2.12, 2.2, 1.25);
+  b.position.set(-1.92, 2.2, 1.05);
   b.rotation.y = .5;
   g.add(b);
   const pinkMat = pink[0].material;

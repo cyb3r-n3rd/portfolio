@@ -1,6 +1,6 @@
 # portfolio
 
-Interactive 3D portfolio for **Shivam Verma (cyb3r_n3rd)**: a little neon Indian chai tapri floating in the dark that you can orbit 360°, with a kadai frying pakoras on the counter, Hindi menu cards, a marigold garland and a holographic chai-steam swirl on the roof. Click a sign (or an object) and the camera flies into that object's screen:
+Interactive 3D portfolio for **Shivam Verma (cyb3r_n3rd)**: a little neon Indian street stall, "Shivam's Cyber Tapri", floating in the dark that you can orbit 360°, with a kadai frying pakoras on the counter, Hindi menu cards, a marigold garland and a holographic chai-steam swirl on the roof. Click a sign (or an object) and the camera flies into that object's screen:
 
 | Section | Where it lives |
 | --- | --- |

@@ -140,7 +140,7 @@ function buildShop(root, updaters, clickables, screens) {
 
   // Fascia + name sign
   g.add(rbox(3.62, .78, .2, std('#2a1730', .6, .1), 0, 2.8, .95, .04));
-  const signTex = T.shopSign("SHIVAM'S", 'CHAI TAPRI');
+  const signTex = T.shopSign("SHIVAM'S", 'CYBER TAPRI');
   const sign = plane(3.4, .72, new THREE.MeshBasicMaterial({ map: signTex, toneMapped: false }), 0, 2.8, 1.052);
   sign.material.color.setScalar(1.1);
   g.add(sign);
