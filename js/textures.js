@@ -183,7 +183,7 @@ export function wall(base = '#3a2f6e', seed = 3, stickers = true) {
 export function mural(tag) {
   const [c, ctx] = canvas(1024, 1024);
   const g = ctx.createLinearGradient(0, 0, 1024, 1024);
-  g.addColorStop(0, '#2b1f5c'); g.addColorStop(1, '#1a3a6b');
+  g.addColorStop(0, '#5a2233'); g.addColorStop(1, '#2a1740');
   ctx.fillStyle = g; ctx.fillRect(0, 0, 1024, 1024);
   const r = rng(31);
   ctx.lineWidth = 6; ctx.lineCap = 'round';
@@ -256,13 +256,60 @@ export function menuBoard() {
   return toTexture(c);
 }
 
-/** Soft radial falloff for the floor so the diorama floats in the dark. */
-export function floorAlpha() {
-  const [c, ctx] = canvas(512, 512);
-  const g = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
-  g.addColorStop(0, '#fff'); g.addColorStop(.35, '#fff'); g.addColorStop(1, '#000');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, 512, 512);
-  return toTexture(c, { srgb: false });
+/**
+ * The floor, "baked": coloured light pools under the lamps and machines plus
+ * soft contact shadows, painted once. `size` is the floor's width in metres.
+ */
+export function bakedFloor(size) {
+  const N = 1024, k = N / size;
+  const [c, ctx] = canvas(N, N);
+  const X = (x) => (x + size / 2) * k, Z = (z) => (z + size / 2) * k;
+  ctx.fillStyle = '#050407'; ctx.fillRect(0, 0, N, N);
+
+  // Light pools, added on top of each other like real light.
+  ctx.globalCompositeOperation = 'lighter';
+  const pool = (x, z, r, rgb, a) => {
+    const g = ctx.createRadialGradient(X(x), Z(z), 0, X(x), Z(z), r * k);
+    g.addColorStop(0, `rgba(${rgb},${a})`);
+    g.addColorStop(.45, `rgba(${rgb},${a * .45})`);
+    g.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, N, N);
+  };
+  pool(0, 1.2, 10, '88,46,138', .7);      // broad violet wash
+  pool(-3.3, 1.6, 6, '185,50,145', .55);  // pink lamps
+  pool(-3.3, 1.8, 1.8, '255,190,235', .35);
+  pool(3.4, .6, 5.5, '28,150,165', .7);    // teal machines
+  pool(0, 1.6, 2.6, '255,150,70', .35);    // warm spill from the counter
+  pool(1, -2.6, 2.6, '255,190,120', .2);   // back door lamp
+
+  // Contact shadows: draw each shape far off-canvas and keep only its blurred shadow.
+  ctx.globalCompositeOperation = 'source-over';
+  const off = N * 2;
+  const shadow = (blur, alpha, draw) => {
+    ctx.save();
+    ctx.shadowColor = `rgba(3,0,6,${alpha})`; ctx.shadowBlur = blur; ctx.shadowOffsetX = off;
+    ctx.translate(-off, 0); ctx.fillStyle = '#000'; ctx.beginPath(); draw(); ctx.fill();
+    ctx.restore();
+  };
+  const rect = (x, z, w, d, rot = 0) => () => {
+    ctx.translate(X(x) , Z(z)); ctx.rotate(rot); ctx.rect(-w * k / 2, -d * k / 2, w * k, d * k);
+  };
+  const disc = (x, z, r) => () => ctx.arc(X(x), Z(z), r * k, 0, Math.PI * 2);
+  shadow(40, .85, rect(0, -.2, 3.9, 2.9));          // stall
+  shadow(18, .7, rect(2.5, -.25, 1.1, .9, .18));    // vending machine
+  shadow(18, .7, rect(3.7, .75, .95, .8, .6));      // arcade
+  shadow(14, .7, disc(-3.3, 1.55, .35));            // signpost base
+  shadow(14, .6, rect(-2.3, -.9, .7, 1.4));         // crates
+  for (const x of [-1.1, 0, 1.1]) shadow(10, .55, disc(x, 1.38, .22)); // stools
+  shadow(10, .5, rect(-1.35, 1.95, .7, .45, -.3));   // menu board
+  shadow(10, .5, disc(1.95, 1.6, .22));             // plant
+  shadow(14, .6, rect(2.3, -1.2, .9, .6));          // bin bags
+
+  // Fade the edges into the void.
+  const fade = ctx.createRadialGradient(N / 2, N / 2 + 1.2 * k, 5 * k, N / 2, N / 2 + 1.2 * k, 14 * k);
+  fade.addColorStop(0, 'rgba(5,4,7,0)'); fade.addColorStop(1, 'rgba(5,4,7,1)');
+  ctx.fillStyle = fade; ctx.fillRect(0, 0, N, N);
+  return toTexture(c);
 }
 
 // ---------------------------------------------------------------------------
@@ -400,5 +447,5 @@ export function tvScreen() {
     for (let i = 0; i < 300; i++) { ctx.fillStyle = `rgba(255,255,255,${r() * .08})`; ctx.fillRect(r() * 800, r() * 600, 2, 2); }
     ctx.fillStyle = 'rgba(0,0,0,.25)';
     for (let sy = 0; sy < 600; sy += 4) ctx.fillRect(0, sy, 800, 2);
-  }, 8);
+  }, 4);
 }

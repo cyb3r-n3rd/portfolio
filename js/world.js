@@ -2,7 +2,6 @@
 // Three.js primitives with canvas textures (see textures.js). No external assets.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as T from './textures.js';
 import { profile, projects } from './content.js';
 
@@ -14,12 +13,14 @@ export const SECTIONS = [
   { id: 'contact', label: 'contact', color: '#ffb020', dir: 'left' },
 ];
 
-const G = 0.16; // top of the pavement slab
+const G = 0; // ground level (no slab: the stall sits straight on the glowing floor)
 
 // Helpers ---------------------------------------------------------------------
 
-const std = (color, roughness = .6, metalness = .05, extra = {}) =>
-  new THREE.MeshStandardMaterial({ color, roughness, metalness, ...extra });
+// Lambert instead of PBR: much cheaper per pixel and gives the soft, painted,
+// "baked" look rather than glossy CG. (roughness/metalness args are ignored.)
+const std = (color, roughness, metalness, extra = {}) =>
+  new THREE.MeshLambertMaterial({ color, ...extra });
 const glow = (color, intensity = 2) =>
   new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(intensity), toneMapped: false });
 
@@ -56,11 +57,8 @@ export function buildWorld(scene, renderer) {
   const clickables = [];
   const screens = {};
 
-  scene.background = new THREE.Color('#07060d');
-  scene.fog = new THREE.Fog('#07060d', 16, 34);
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
-  scene.environmentIntensity = .28;
+  scene.background = new THREE.Color('#050407');
+  scene.fog = new THREE.Fog('#050407', 18, 40);
 
   const root = new THREE.Group();
   scene.add(root);
@@ -75,12 +73,6 @@ export function buildWorld(scene, renderer) {
   buildSignpost(root, updaters, clickables);
   buildProps(root, updaters);
 
-  root.traverse((o) => {
-    if (o.isMesh && o.material && o.material.isMeshStandardMaterial) {
-      o.castShadow = !o.userData.noShadow;
-      o.receiveShadow = true;
-    }
-  });
 
   return {
     clickables,
@@ -92,37 +84,24 @@ export function buildWorld(scene, renderer) {
 // Ground & lights ------------------------------------------------------------------
 
 function buildGround(root) {
+  // Light pools and contact shadows are painted into the texture ("baked"),
+  // so the floor costs one unlit draw and no shadow maps.
+  const size = 32;
   const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(17, 64),
-    std('#2b2140', .55, 0, { alphaMap: T.floorAlpha(), transparent: true, depthWrite: false }),
+    new THREE.PlaneGeometry(size, size),
+    new THREE.MeshBasicMaterial({ map: T.bakedFloor(size), fog: false }),
   );
   floor.rotation.x = -Math.PI / 2;
-  floor.userData.noShadow = true;
   root.add(floor);
-
-  // Pavement slab
-  root.add(rbox(8.8, G, 5.2, std('#4a4063', .8, 0), 0, G / 2, .2, .05));
-  const tiles = new THREE.GridHelper(8.6, 22, '#2d2640', '#2d2640');
-  tiles.scale.z = 5 / 8.6;
-  tiles.position.set(0, G + .002, .2);
-  tiles.material.transparent = true; tiles.material.opacity = .5;
-  root.add(tiles);
 }
 
 function buildLights(root) {
-  root.add(new THREE.HemisphereLight('#7a66c0', '#1a0f2a', .9));
-
-  const key = new THREE.DirectionalLight('#c3b8ff', 1.6);
+  // Warm plum fill from above, dark below: dark areas read purple, not grey.
+  root.add(new THREE.HemisphereLight('#6b4a86', '#140a18', 1.1));
+  const key = new THREE.DirectionalLight('#ffd0e6', .9);
   key.position.set(-6, 10, 8);
-  key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
-  Object.assign(key.shadow.camera, { left: -7, right: 7, top: 7, bottom: -3, near: 1, far: 30 });
-  key.shadow.bias = -.0004;
-  key.shadow.normalBias = .02;
-  key.shadow.radius = 4;
   root.add(key);
-
-  const rim = new THREE.DirectionalLight('#35e0ff', .9);
+  const rim = new THREE.DirectionalLight('#3fd6e0', .55);
   rim.position.set(7, 5, -6);
   root.add(rim);
 }
@@ -134,11 +113,11 @@ function buildShop(root, updaters, clickables, screens) {
   g.position.y = G;
   root.add(g);
 
-  const wallMat = std('#ffffff', .75, 0, { map: T.wall('#4f3c96', 3) });
-  const wallMatPlain = std('#ffffff', .75, 0, { map: T.wall('#45358a', 8, false) });
+  const wallMat = std('#ffffff', .75, 0, { map: T.wall('#9a3a2b', 3) });
+  const wallMatPlain = std('#ffffff', .75, 0, { map: T.wall('#7e2f25', 8, false) });
   const wood = std('#ffffff', .7, 0, { map: T.planks('#c8703e') });
   const darkWood = std('#ffffff', .7, 0, { map: T.planks('#6b3a26', 5) });
-  const trim = std('#ff4fa3', .45, .1);
+  const trim = std('#ff5c9a', .45, .1);
   const cream = std('#efe6d6', .5, 0);
 
   // Shell
@@ -157,7 +136,7 @@ function buildShop(root, updaters, clickables, screens) {
   for (const x of [-1.64, 1.64]) g.add(rbox(.18, 3.1, .18, trim, x, 1.55, .92, .04));
 
   // Fascia + name sign
-  g.add(rbox(3.62, .78, .2, std('#241a4a', .6, .1), 0, 2.8, .95, .04));
+  g.add(rbox(3.62, .78, .2, std('#2a1730', .6, .1), 0, 2.8, .95, .04));
   const signTex = T.shopSign("SHIVAM'S", profile.handle.toUpperCase());
   const sign = plane(3.4, .72, new THREE.MeshBasicMaterial({ map: signTex, toneMapped: false }), 0, 2.8, 1.052);
   sign.material.color.setScalar(1.1);
@@ -171,7 +150,7 @@ function buildShop(root, updaters, clickables, screens) {
   });
 
   // Awning
-  const { map, alphaMap } = T.awning('#16b3a8', '#e9fbff');
+  const { map, alphaMap } = T.awning('#7a55e6', '#b7a4ff');
   const awn = new THREE.Mesh(new THREE.PlaneGeometry(3.7, .7, 1, 1),
     std('#ffffff', .8, 0, { map, alphaMap, alphaTest: .5, side: THREE.DoubleSide }));
   awn.rotation.x = -1.3;
@@ -257,12 +236,9 @@ function buildShop(root, updaters, clickables, screens) {
   }
 
   // Warm light inside
-  const warm = new THREE.PointLight('#ffb56b', 7, 6, 1.6);
+  const warm = new THREE.PointLight('#ffb36b', 9, 6, 1.4);
   warm.position.set(0, 2.5, 0);
   g.add(warm);
-  const screenGlow = new THREE.PointLight('#2af3ff', 3, 3, 2);
-  screenGlow.position.set(0, 1.8, -.6);
-  g.add(screenGlow);
 
   // Back: mural, door and a lamp so the stall is worth orbiting around
   const mural = plane(3.3, 2.9, std('#ffffff', .8, 0, { map: T.mural(profile.handle) }), 0, 1.5, -1.375);
@@ -308,7 +284,7 @@ function buildRoof(root, updaters) {
   const g = new THREE.Group();
   g.position.y = G + 3.1;
   root.add(g);
-  const roofMat = std('#2a2248', .7, .1);
+  const roofMat = std('#3a2238', .7, .1);
   const metal = std('#8d97b5', .45, .6);
   const darkMetal = std('#3b3558', .5, .5);
 
@@ -365,7 +341,7 @@ function buildRoof(root, updaters) {
 
   // Rooftop neon: a padlock on a board
   const lock = new THREE.Group();
-  const neon = glow('#b6ff3b', 2.6);
+  const neon = glow('#b6ff3b', 1.25);
   const w = .62, h = .5, r = .09;
   const body = [
     V(-w / 2 + r, -h / 2, 0), V(w / 2 - r, -h / 2, 0), V(w / 2, -h / 2 + r, 0), V(w / 2, h / 2 - r, 0),
@@ -383,10 +359,7 @@ function buildRoof(root, updaters) {
   lock.position.set(.95, 1.45, .45);
   lock.rotation.y = -.25;
   g.add(lock);
-  const lockLight = new THREE.PointLight('#b6ff3b', 3, 3, 2);
-  lockLight.position.set(.9, 1.4, 1.0);
-  g.add(lockLight);
-  updaters.push((t) => { neon.color.setRGB(.71, 1, .23).multiplyScalar(2.3 + Math.sin(t * 3) * .3); });
+  updaters.push((t) => { neon.color.setRGB(.71, 1, .23).multiplyScalar(1.2 + Math.sin(t * 3) * .12); });
 
   // Pipes down the side wall
   const pipe = std('#8d97b5', .4, .6);
@@ -435,8 +408,9 @@ function buildVending(root, updaters, clickables, screens) {
   const vBack = plane(.9, 1.9, std('#ffffff', .6, .1, { map: T.backPanel('#0f5f5b', 4) }), 0, 1.0, -.414);
   vBack.rotation.y = Math.PI;
   g.add(vBack);
-  const l = new THREE.PointLight('#3dffe0', 2.6, 3.5, 2);
-  l.position.set(0, 1.3, 1.1);
+  // One teal light covers both the vending machine and the arcade.
+  const l = new THREE.PointLight('#3fe6d8', 6, 6, 1.4);
+  l.position.set(.7, 1.5, 1.4);
   g.add(l);
 }
 
@@ -493,9 +467,6 @@ function buildArcade(root, updaters, clickables, screens) {
   const aBack = plane(.7, 1.95, std('#ffffff', .6, .1, { map: T.backPanel('#3d2185', 8) }), 0, 1.06, -.37);
   aBack.rotation.y = Math.PI;
   g.add(aBack);
-  const l = new THREE.PointLight('#b36bff', 2.2, 3.5, 2);
-  l.position.set(0, 1.6, .9);
-  g.add(l);
 }
 
 // Wall TV (Research) ----------------------------------------------------------------
@@ -521,9 +492,6 @@ function buildTV(root, updaters, clickables, screens) {
   screens.research = screen;
   clickables.push(screen);
 
-  const l = new THREE.PointLight('#b6ff3b', 2.5, 3, 2);
-  l.position.set(0, 0, 1);
-  g.add(l);
 }
 
 // Signpost ----------------------------------------------------------------------
@@ -550,16 +518,17 @@ function buildSignpost(root, updaters, clickables) {
   // Twin globe lamps
   g.add(rbox(1.4, .07, .07, post, 0, 4.25, 0, .03));
   const globes = [];
-  [[-.62, '#ff66d9'], [.62, '#fff0e0']].forEach(([x, col]) => {
+  [[-.62, '#ffa3ea'], [.62, '#fff2e6']].forEach(([x, col]) => {
     g.add(cyl(.05, .07, .12, post, x, 4.18, 0, 12));
-    const globe = new THREE.Mesh(new THREE.SphereGeometry(.26, 32, 20), glow(col, 1.25));
+    const globe = new THREE.Mesh(new THREE.SphereGeometry(.26, 32, 20), glow(col, 2.2));
     globe.position.set(x, 3.9, 0);
     g.add(globe);
     globes.push(globe);
-    const light = new THREE.PointLight(col, 11, 12, 1.6);
-    light.position.set(x, 3.6, .15);
-    g.add(light);
   });
+  // One pink light between the two globes.
+  const lampLight = new THREE.PointLight('#ff6fcf', 16, 12, 1.4);
+  lampLight.position.set(0, 3.6, .2);
+  g.add(lampLight);
 
   // Status box on the pole
   g.add(rbox(.34, .42, .18, std('#1fae63', .45, .1), 0, 3.35, .08, .04));
@@ -586,7 +555,7 @@ function buildSignpost(root, updaters, clickables) {
     const cx = x0 + (sec.dir === 'right' ? W / 2 : -W / 2);
     const face = (dir, z, ry) => {
       const tex = T.arrowSign(sec.label, sec.color, dir);
-      const m = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: '#ffffff', emissiveIntensity: .45, alphaTest: .5, roughness: .5 });
+      const m = new THREE.MeshLambertMaterial({ map: tex, emissiveMap: tex, emissive: '#ffffff', emissiveIntensity: .45, alphaTest: .5 });
       const p = plane(W + .02, H + .02, m, cx, 0, z);
       p.rotation.y = ry;
       p.userData.noShadow = true;
@@ -669,18 +638,4 @@ function buildProps(root, updaters) {
   cone.add(new THREE.Mesh(new THREE.CylinderGeometry(.085, .11, .07, 24, 1, true), std('#ffffff', .4)).translateY(.28));
   cone.position.set(-3.7, G, .1);
   root.add(cone);
-
-  // Drifting sparkles
-  const N = 90, pos = new Float32Array(N * 3), r = T.rng(12);
-  for (let i = 0; i < N; i++) pos.set([(r() - .5) * 9, r() * 6, (r() - .5) * 6], i * 3);
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  root.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: '#ffb8f0', size: .035, transparent: true, opacity: .7, depthWrite: false })));
-  updaters.push((t, dt) => {
-    for (let i = 0; i < N; i++) {
-      pos[i * 3 + 1] += dt * (.08 + (i % 5) * .02);
-      if (pos[i * 3 + 1] > 6) pos[i * 3 + 1] = 0;
-    }
-    geo.attributes.position.needsUpdate = true;
-  });
 }

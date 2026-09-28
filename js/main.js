@@ -29,7 +29,8 @@ async function loadFonts() {
 
 let renderer = null;
 try {
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+  // No canvas MSAA: the scene is drawn into the composer's target, which does its own.
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
 } catch (e) {
   console.warn('WebGL unavailable, showing the flat page.', e);
 }
@@ -53,12 +54,11 @@ async function start() {
   await loadFonts();
 
   const small = Math.min(innerWidth, innerHeight) < 600;
-  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.5 : 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.25 : 1.5));
   renderer.setSize(innerWidth, innerHeight);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = .95;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // Neutral keeps hues true (ACES pushes neon toward white/yellow and reads "CG").
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1.0;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, .05, 100);
@@ -67,9 +67,10 @@ async function start() {
   await new Promise((r) => setTimeout(r, 20));
   const world = buildWorld(scene, renderer);
 
-  const composer = new EffectComposer(renderer);
+  const target = new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: small ? 2 : 4 });
+  const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .42, .55, .95);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .5, .1, .9);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -115,7 +116,8 @@ async function start() {
   camera.lookAt(intro.target);
 
   progress(.8, 'warming up the neon…');
-  renderer.compile(scene, camera);
+  // Compile shaders in parallel where the GPU driver allows it, without freezing the page.
+  await renderer.compileAsync(scene, camera);
   composer.render();
 
   // State ---------------------------------------------------------------------------
@@ -308,6 +310,6 @@ async function start() {
   }, { once: true });
 
   if (location.search.includes('debug')) {
-    window.__app = { scene, camera, controls, world, open, close, get state() { return state; } };
+    window.__app = { scene, camera, controls, world, renderer, open, close, get state() { return state; } };
   }
 }
