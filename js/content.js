@@ -12,9 +12,11 @@ export const profile = {
     'Placeholder: a sentence or two about what drives you, the kind of targets you enjoy, and how you like to work with the teams whose systems you test.',
     'Thanks for stopping by the stall.',
   ],
+  // Drop the PDF at assets/resume.pdf (same folder as the site) and this link works.
+  resume: 'assets/resume.pdf',
   socials: [
     { label: 'GitHub', icon: 'github', href: 'https://github.com/cyb3r-n3rd' },
-    { label: 'LinkedIn', icon: 'linkedin', href: '#' },
+    { label: 'LinkedIn', icon: 'linkedin', href: 'https://www.linkedin.com/in/shivamvermacyber' },
     { label: 'X', icon: 'x', href: '#' },
     { label: 'Email', icon: 'mail', href: 'mailto:placeholder@example.com' },
   ],
@@ -57,6 +59,7 @@ export const research = [
 export const contact = [
   { label: 'EMAIL', value: 'placeholder@example.com', href: 'mailto:placeholder@example.com' },
   { label: 'GITHUB', value: 'cyb3r-n3rd', href: 'https://github.com/cyb3r-n3rd' },
-  { label: 'LINKEDIN', value: 'placeholder', href: '#' },
+  { label: 'LINKEDIN', value: 'shivamvermacyber', href: 'https://www.linkedin.com/in/shivamvermacyber' },
+  { label: 'RESUME', value: 'download pdf', href: 'assets/resume.pdf' },
   { label: 'PGP', value: 'placeholder fingerprint', href: null },
 ];

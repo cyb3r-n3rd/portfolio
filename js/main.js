@@ -55,7 +55,8 @@ async function start() {
   await loadFonts();
 
   const small = Math.min(innerWidth, innerHeight) < 600;
-  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.25 : 1.5));
+  // Full device resolution (up to 2x): rendering below it and upscaling is what made v2 look soft.
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);
   // Neutral keeps hues true (ACES pushes neon toward white/yellow and reads "CG").
   renderer.toneMapping = THREE.NeutralToneMapping;
@@ -71,7 +72,7 @@ async function start() {
   const target = new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: small ? 2 : 4 });
   const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .5, .1, .9);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .32, .1, .92);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 

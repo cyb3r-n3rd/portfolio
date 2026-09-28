@@ -339,3 +339,43 @@ export function groundText(root, name, lines) {
   m.position.set(2.2, .01, 3.25);
   root.add(m);
 }
+
+// Side panel ---------------------------------------------------------------------------
+
+/** Scrolling LED ticker board above the machines, stock-exchange style. */
+export function ledTicker(root, updaters, items) {
+  const [c, ctx] = T.canvas(2048, 128);
+  ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, 2048, 128);
+  ctx.font = `36px ${T.FONT_PIXEL}`; ctx.textBaseline = 'middle';
+  let x = 30;
+  // Draw the list twice so the strip loops seamlessly.
+  for (let pass = 0; pass < 2 && x < 2048; pass++) {
+    for (const [sym, val, up] of items) {
+      ctx.fillStyle = '#e9ecf5'; ctx.fillText(sym, x, 64); x += ctx.measureText(sym).width + 22;
+      const col = up ? '#3dff7a' : '#ff4b5c';
+      ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 10;
+      const v = `${val}${up ? '▲' : '▼'}`;
+      ctx.fillText(v, x, 64); x += ctx.measureText(v).width + 70;
+      ctx.shadowBlur = 0;
+      if (x > 2048) break;
+    }
+  }
+  // LED dot mask
+  ctx.fillStyle = 'rgba(0,0,0,.35)';
+  for (let yy = 0; yy < 128; yy += 6) ctx.fillRect(0, yy, 2048, 2);
+  for (let xx = 0; xx < 2048; xx += 6) ctx.fillRect(xx, 0, 2, 128);
+  const tex = T.toTexture(c);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.repeat.set(.55, 1);
+
+  const b = new THREE.Group();
+  b.add(new THREE.Mesh(new THREE.BoxGeometry(2.3, .46, .12), lam('#1d1a26')));
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(2.2, .36), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }));
+  face.position.z = .061;
+  b.add(face);
+  for (const x2 of [-.95, .95]) b.add(new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .6, 8), lam('#3b3558')).translateX(x2).translateY(-.5).translateZ(-.1));
+  b.position.set(3.25, 2.75, .25);
+  b.rotation.y = -.5;
+  root.add(b);
+  updaters.push((t) => { tex.offset.x = (t * .05) % 1; });
+}

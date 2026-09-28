@@ -15,7 +15,7 @@ export function canvas(w, h) {
 export function toTexture(c, { srgb = true, repeat } = {}) {
   const t = new THREE.CanvasTexture(c);
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 8;
+  t.anisotropy = 16; // clamped to the GPU's max; keeps angled signs crisp
   if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat); }
   return t;
 }
@@ -56,13 +56,13 @@ export function arrowSign(text, color, dir) {
   }
   ctx.closePath();
   ctx.fillStyle = color; ctx.fill();
-  ctx.lineWidth = 14; ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.stroke();
+  ctx.lineWidth = 18; ctx.strokeStyle = '#16122b'; ctx.stroke();
   ctx.save(); ctx.clip();
   ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(0, 0, W, H * .42);
   ctx.restore();
   ctx.fillStyle = '#16122b';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  fitFont(ctx, text, 700, 118, FONT_UI, W - tip - 120);
+  fitFont(ctx, text, 400, 76, FONT_PIXEL, W - tip - 150);
   ctx.fillText(text, dir === 'right' ? (W - tip) / 2 + 20 : (W + tip) / 2 - 20, H / 2 + 6);
   return toTexture(c);
 }

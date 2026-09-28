@@ -74,6 +74,7 @@ export function buildWorld(scene, renderer) {
   buildSignpost(root, updaters, clickables);
   buildProps(root, updaters);
   IN.groundText(root, profile.name, profile.roles);
+  IN.ledTicker(root, updaters, [['XSS', '1337.00', 1], ['SQLI', '404.04', 0], ['RCE', '9.8', 1], ['IDOR', '101.10', 1], ['CHAI', '10.00', 1], ['SSRF', '169.25', 0], ['BUGS', '99+', 1], ['CVE', '2022', 1]]);
 
 
   return {

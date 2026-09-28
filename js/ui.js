@@ -59,7 +59,8 @@ function aboutPanel() {
         ${profile.bio.map((p) => `<p>${esc(p)}</p>`).join('')}
         ${codeBars(7)}
         <ul class="socials">${profile.socials.map((s) =>
-          `<li><a href="${esc(s.href)}" target="_blank" rel="noopener" aria-label="${esc(s.label)}">${icon(s.icon)}</a></li>`).join('')}</ul>
+          `<li><a href="${esc(s.href)}" target="_blank" rel="noopener" aria-label="${esc(s.label)}">${icon(s.icon)}</a></li>`).join('')}
+          <li><a class="resume" href="${esc(profile.resume)}" target="_blank" rel="noopener">Resume ↓</a></li></ul>
       </div>
       <div class="tab" data-pane="skills" hidden>
         ${codeBars(5)}
