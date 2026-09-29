@@ -312,7 +312,7 @@ export function bakedFloor(size) {
   shadow(14, .6, rect(-2.3, -.9, .7, 1.4));         // crates
   for (const x of [-1.1, 0, 1.1]) shadow(10, .55, disc(x, 1.38, .22)); // stools
   shadow(10, .5, rect(2.05, 1.65, .7, .45, .35));   // menu board
-  shadow(12, .5, rect(4.75, .45, .9, .5, .75));     // training easel
+  shadow(12, .5, rect(3.95, 2.15, .9, .5, .5));     // training easel
   shadow(10, .5, disc(2.15, .8, .22));              // plant
   shadow(14, .6, rect(2.3, -1.2, .9, .6));          // bin bags
 

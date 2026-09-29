@@ -480,15 +480,24 @@ function buildSignpost(root, updaters, clickables) {
   g.add(cyl(.11, .11, .1, std('#ff4fa3', .4), 0, 1.0, 0));
 
   // Twin globe lamps
-  g.add(rbox(1.4, .07, .07, post, 0, 4.25, 0, .03));
+  // Chunky cross-arm with end blocks; each globe hangs from a drop rod and collar.
+  g.add(rbox(1.6, .11, .11, post, 0, 4.25, 0, .03));
   const globes = [];
-  [[-.62, '#ff5fd0'], [.62, '#ff9ae6']].forEach(([x, col]) => {
-    g.add(cyl(.05, .07, .12, post, x, 4.18, 0, 12));
+  const hangers = [];
+  [[-.74, '#ff5fd0'], [.74, '#ff9ae6']].forEach(([x, col]) => {
+    g.add(rbox(.2, .2, .2, post, x, 4.25, 0, .03));
+    const h = new THREE.Group();
+    h.position.set(x, 4.15, 0);
+    h.add(cyl(.025, .025, .34, post, 0, -.17, 0, 8));
+    h.add(cyl(.06, .12, .1, post, 0, -.37, 0, 16));
     const globe = new THREE.Mesh(new THREE.SphereGeometry(.3, 48, 32), IN.globeMaterial(col));
-    globe.position.set(x, 3.9, 0);
-    g.add(globe);
+    globe.position.y = -.68;
+    h.add(globe);
+    g.add(h);
     globes.push(globe);
+    hangers.push(h);
   });
+  updaters.push((t) => hangers.forEach((h, i) => { h.rotation.z = Math.sin(t * 1.1 + i * 1.9) * .025; h.rotation.x = Math.sin(t * .8 + i) * .015; }));
   // Mast above the cross-arm with a cyan tip, and a bar of little LEDs
   g.add(cyl(.03, .04, .9, post, 0, 4.7, 0, 10));
   const tip = new THREE.Mesh(new THREE.SphereGeometry(.045, 12, 8), glow('#5ff6ff', 2.5));
@@ -510,7 +519,7 @@ function buildSignpost(root, updaters, clickables) {
 
   // One pink light between the two globes.
   const lampLight = new THREE.PointLight('#ff6fcf', 16, 12, 1.4);
-  lampLight.position.set(0, 3.6, .2);
+  lampLight.position.set(0, 3.35, .2);
   g.add(lampLight);
 
   // Status box on the pole

@@ -7,7 +7,7 @@ export const profile = {
   role: 'Offensive Security Engineer',
   intro: "Hi, I'm Shivam.",
   // Floating above the ground in front of the stall.
-  roles: ['Offensive Security Engineer', 'Red Team', 'Web & API Penetration Testing', 'CVE Holder · Springer Best Paper', 'Hardware Hacker'],
+  roles: ['Offensive Security Engineer', 'Red Team · Web & API Pentesting', 'Cyber Security Trainer', 'Speaker · Harvard HPAIR 2026', 'CVE Holder · Springer Best Paper'],
   bio: [
     'Offensive security engineer and penetration tester with just over five years breaking into web applications, APIs and networks. Hands-on exploitation, not theory, plus red team engagements that chain findings the way a real attacker would.',
     'Published CVE holder and Springer Best Paper winner, with over 15,000 USD in bug bounties and Hall of Fame at the U.S. DoD and HP. I script my own tooling in Python and Bash.',

@@ -441,8 +441,10 @@ export function verticalBillboard(g, updaters, word) {
   }
   // cables down to the wall
   for (const x of [-.12, .12]) b.add(tube([V(x, -H / 2 - .08, 0), V(x + .05, -H / 2 - .35, -.1), V(x + .15, -H / 2 - .5, -.25)], .012, lam('#111018')));
-  b.position.set(-1.6, 4.62, -1.05);
-  b.rotation.y = .45;
+  // Bolted to the front-left corner post: starts just above the awning and rises past the roof.
+  for (const y of [-H / 2 + .35, H / 2 - .45]) b.add(new THREE.Mesh(new THREE.BoxGeometry(.28, .06, .06), lam('#3b3558')).translateX(W / 2 + .2).translateY(y));
+  b.position.set(-2.0, 2.5 + H / 2, 1.02);
+  b.rotation.y = .5;
   g.add(b);
   const pm = pinkF.material;
   updaters.push((t) => { const on = (t % 8) > .3 || Math.sin(t * 60) > 0; pm.color.set('#ff4fcf').multiplyScalar(on ? 2.2 : .5); });
@@ -493,8 +495,8 @@ export function trainingEasel(root, updaters, clickables, screens, G) {
   board.position.set(0, 1.08, .1);
   board.rotation.x = -.12;
   e.add(board);
-  e.position.set(4.75, G, .45);
-  e.rotation.y = -.75;
+  e.position.set(3.95, G, 2.15);
+  e.rotation.y = -.5;
   root.add(e);
   screen.userData.section = 'training';
   screens.training = screen;
