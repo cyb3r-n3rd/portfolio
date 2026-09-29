@@ -68,15 +68,13 @@ export function buildWorld(scene, renderer) {
   buildGround(root);
   buildLights(root);
   buildShop(root, updaters, clickables, screens);
-  buildRoof(root, updaters);
+  buildRoof(root, updaters, clickables, screens);
   buildVending(root, updaters, clickables, screens);
   buildArcade(root, updaters, clickables, screens);
   buildTV(root, updaters, clickables, screens);
   buildSignpost(root, updaters, clickables);
-  IN.trainingEasel(root, updaters, clickables, screens, G);
   buildProps(root, updaters);
   IN.groundText(root, profile.name, profile.roles, updaters);
-  IN.ledTicker(root, updaters, [['XSS', '1337.00', 1], ['SQLI', '404.04', 0], ['RCE', '9.8', 1], ['IDOR', '101.10', 1], ['CHAI', '10.00', 1], ['SSRF', '169.25', 0], ['BUGS', '99+', 1], ['CVE', '2022', 1]]);
 
 
   return {
@@ -258,7 +256,7 @@ function buildShop(root, updaters, clickables, screens) {
 
 // Roof clutter ---------------------------------------------------------------------
 
-function buildRoof(root, updaters) {
+function buildRoof(root, updaters, clickables, screens) {
   const g = new THREE.Group();
   g.position.y = G + 3.1;
   root.add(g);
@@ -269,61 +267,13 @@ function buildRoof(root, updaters) {
   g.add(rbox(3.9, .2, 2.75, roofMat, 0, .1, -.18, .05));
   g.add(rbox(3.9, .12, .12, std('#ff4fa3', .45), 0, .26, 1.14, .03));
 
-  // Water tank on legs
-  const tank = new THREE.Group();
-  tank.add(cyl(.42, .42, .8, std('#5f7fb0', .5, .3), 0, .95, 0));
-  tank.add(new THREE.Mesh(new THREE.ConeGeometry(.46, .25, 24), std('#46618d', .5, .3)).translateY(1.47));
-  for (const [x, z] of [[-.3, -.3], [.3, -.3], [-.3, .3], [.3, .3]]) tank.add(cyl(.03, .03, .6, darkMetal, x, .4, z, 8));
-  for (const y of [.75, 1.15]) {
-    const hoop = new THREE.Mesh(new THREE.TorusGeometry(.43, .015, 6, 32), darkMetal);
-    hoop.position.y = y; hoop.rotation.x = Math.PI / 2;
-    tank.add(hoop);
-  }
-  tank.position.set(1.3, .1, -.85);
-  g.add(tank);
-
-  // AC units with spinning fans
-  [[1.45, .05, -.5]].forEach(([x, z, ry], i) => {
-    const ac = new THREE.Group();
-    ac.add(rbox(.7, .5, .45, std('#c9cfdc', .5, .2), 0, .25, 0, .04));
-    ac.add(new THREE.Mesh(new THREE.CircleGeometry(.18, 24), std('#2a2a33', .6)).translateY(.25).translateZ(.231));
-    const fan = new THREE.Group();
-    for (let b = 0; b < 3; b++) { const blade = rbox(.3, .06, .01, darkMetal, 0, 0, 0, .005); blade.rotation.z = b * Math.PI / 1.5; fan.add(blade); }
-    fan.position.set(0, .25, .235);
-    ac.add(fan);
-    ac.position.set(x, .2, z); ac.rotation.y = ry;
-    g.add(ac);
-    updaters.push((t) => { fan.rotation.z = t * (6 + i * 2); });
-  });
-
-  // Satellite dish
-  const dish = new THREE.Group();
-  const bowl = new THREE.Mesh(new THREE.SphereGeometry(.42, 32, 12, 0, Math.PI * 2, 0, .75), std('#e8ecf5', .4, .2, { side: THREE.DoubleSide }));
-  bowl.rotation.x = Math.PI / 2 + .5;
-  dish.add(bowl);
-  dish.add(cyl(.04, .05, .6, darkMetal, 0, -.35, -.1, 8));
-  dish.position.set(.1, .75, -1.05);
-  dish.rotation.y = .5;
-  g.add(dish);
-
-  // Antenna mast with a blinking beacon
-  const mast = new THREE.Group();
-  mast.add(cyl(.025, .035, 2.2, metal, 0, 1.1, 0, 8));
-  for (const [y, w] of [[1.5, .7], [1.8, .5], [2.05, .3]]) { const bar = cyl(.012, .012, w, metal, 0, y, 0, 6); bar.rotation.z = Math.PI / 2; mast.add(bar); }
-  const beacon = new THREE.Mesh(new THREE.SphereGeometry(.05, 12, 8), glow('#ff3b3b', 3));
-  beacon.position.y = 2.24;
-  mast.add(beacon);
-  mast.position.set(-.35, .2, -1.2);
-  g.add(mast);
-  updaters.push((t) => { beacon.visible = (t % 1.6) < .8; });
-
   // Rooftop: neon chai glass wrapped in a holographic swirl, a sunset TV and a solar panel
   IN.chaiNeon(g, updaters);
   const holo = new THREE.Group();
   holo.position.set(.95, .75, .4);
   g.add(holo);
   IN.hologram(holo, updaters);
-  IN.rooftopTV(g, updaters);
+  IN.rooftopTV(g, updaters, clickables, screens); // doubles as the Training screen
 
   // Pipes down the side wall
   const pipe = std('#8d97b5', .4, .6);
@@ -331,19 +281,9 @@ function buildRoof(root, updaters) {
 
   // Cables from the roof to the lamp post and across to the arcade
   const cable = std('#111018', .8);
-  g.add(tube(sag([-1.9, .15, .9], [-3.2, .95, 1.5], .2), .012, cable));
+  g.add(tube(sag([-1.9, .15, .9], [-3.8, .95, 1.6], .25), .012, cable));
   g.add(tube(sag([1.9, .2, .8], [3.55, -.9, .7], .2), .012, cable));
-  // String lights along the front edge
-  const pts = sag([-1.85, .05, 1.22], [1.85, .05, 1.22], .12);
-  g.add(tube(pts, .006, cable));
-  const bulbs = [];
-  pts.forEach((p, i) => {
-    if (i % 2 || i === 0 || i === pts.length - 1) return;
-    const b = new THREE.Mesh(new THREE.SphereGeometry(.035, 10, 8), glow(['#ffd27a', '#ff6fd8', '#6ff4ff'][i % 3], 2.4));
-    b.position.copy(p).add(V(0, -.04, 0));
-    g.add(b); bulbs.push(b);
-  });
-  updaters.push((t) => bulbs.forEach((b, i) => { b.visible = Math.sin(t * 2 + i * 1.7) > -.85; }));
+
 }
 
 // Vending machine (Projects) ---------------------------------------------------------
@@ -470,7 +410,7 @@ function arrowShape(w, h, dir) {
 
 function buildSignpost(root, updaters, clickables) {
   const g = new THREE.Group();
-  g.position.set(-3.3, G, 1.55);
+  g.position.set(-3.9, G, 1.6);
   g.rotation.y = .3;
   root.add(g);
 
@@ -593,21 +533,6 @@ function buildProps(root, updaters) {
   menu.rotation.y = -.35;
   root.add(menu);
 
-  // Crates
-  const crate = std('#ffffff', .8, 0, { map: T.planks('#a0643c', 9) });
-  const c1 = rbox(.55, .45, .55, crate, -2.35, G + .225, -1.1, .03); c1.rotation.y = .3;
-  const c2 = rbox(.5, .42, .5, crate, -2.3, G + .66, -1.05, .03); c2.rotation.y = -.1;
-  const c3 = rbox(.5, .45, .5, crate, -2.25, G + .225, -.45, .03); c3.rotation.y = .1;
-  root.add(c1, c2, c3);
-
-  // Bin bags
-  const bag = std('#2a2838', .75, 0);
-  [[2.1, -1.35, .32], [2.5, -1.25, .26], [2.25, -1.0, .22]].forEach(([x, z, r]) => {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), bag);
-    m.scale.y = .75; m.position.set(x, G + r * .7, z);
-    root.add(m);
-  });
-
   // Potted plant
   const plant = new THREE.Group();
   plant.add(cyl(.2, .15, .35, std('#d45a3c', .7), 0, .175, 0));
@@ -623,11 +548,5 @@ function buildProps(root, updaters) {
   plant.position.set(2.15, G, .8);
   root.add(plant);
 
-  // Traffic cone
-  const cone = new THREE.Group();
-  cone.add(new THREE.Mesh(new THREE.ConeGeometry(.15, .48, 24), std('#ff6a1f', .5)).translateY(.28));
-  cone.add(rbox(.34, .04, .34, std('#ff6a1f', .5), 0, .02, 0, .01));
-  cone.add(new THREE.Mesh(new THREE.CylinderGeometry(.085, .11, .07, 24, 1, true), std('#ffffff', .4)).translateY(.28));
-  cone.position.set(-3.7, G, .1);
-  root.add(cone);
+
 }

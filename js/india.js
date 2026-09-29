@@ -296,7 +296,7 @@ export function hologram(g, updaters, { count = 1400, height = 1.7, color = '#5f
 }
 
 /** Rooftop TV playing a sunset, on two legs. */
-export function rooftopTV(g, updaters) {
+export function rooftopTV(g, updaters, clickables, screens) {
   const tv = new THREE.Group();
   tv.add(new THREE.Mesh(new THREE.BoxGeometry(1.16, .74, .08), lam('#1d1a26')));
   const tex = T.sunsetTV();
@@ -308,6 +308,9 @@ export function rooftopTV(g, updaters) {
   tv.rotation.y = .2;
   g.add(tv);
   updaters.push((t) => tex.update(t));
+  screen.userData.section = 'training';
+  screens.training = screen;
+  clickables.push(screen);
 }
 
 /** Solar panel leaning off the back-left corner. */
@@ -442,9 +445,9 @@ export function verticalBillboard(g, updaters, word) {
   // cables down to the wall
   for (const x of [-.12, .12]) b.add(tube([V(x, -H / 2 - .08, 0), V(x + .05, -H / 2 - .35, -.1), V(x + .15, -H / 2 - .5, -.25)], .012, lam('#111018')));
   // Bolted to the front-left corner post: starts just above the awning and rises past the roof.
-  for (const y of [-H / 2 + .35, H / 2 - .45]) b.add(new THREE.Mesh(new THREE.BoxGeometry(.28, .06, .06), lam('#3b3558')).translateX(W / 2 + .2).translateY(y));
-  b.position.set(-2.0, 2.5 + H / 2, 1.02);
-  b.rotation.y = .5;
+  for (const y of [-H / 2 + .35, H / 2 - .45]) b.add(new THREE.Mesh(new THREE.BoxGeometry(.5, .06, .06), lam('#3b3558')).translateX(W / 2 + .33).translateY(y));
+  b.position.set(-2.38, 2.55 + H / 2, .78);
+  b.rotation.y = .55;
   g.add(b);
   const pm = pinkF.material;
   updaters.push((t) => { const on = (t % 8) > .3 || Math.sin(t * 60) > 0; pm.color.set('#ff4fcf').multiplyScalar(on ? 2.2 : .5); });

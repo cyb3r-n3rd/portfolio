@@ -287,8 +287,8 @@ export function bakedFloor(size) {
   pool(.6, 2.8, 6, '#8c5058', 1, .55);       // warm rose at the front
   pool(3.8, .8, 6.5, '#1a6676', .95, .5);    // teal by the machines
   pool(3.6, 2.4, 3.5, '#1f6372', .7, .5);
-  pool(-3.3, 2.8, 4.2, '#673f81', .85, .5);  // violet front-left
-  pool(-3.4, 1.7, 3.3, '#a0449e', 1, .5);    // magenta under the lamp
+  pool(-3.8, 2.8, 4.2, '#673f81', .85, .5);  // violet front-left
+  pool(-3.9, 1.8, 3.3, '#a0449e', 1, .5);    // magenta under the lamp
   pool(0, 1.4, 2.2, '#b0704f', .35, .5);     // warm spill from the counter
   pool(1, -2.6, 2.6, '#8a6a52', .3);         // back door lamp
 
@@ -308,13 +308,10 @@ export function bakedFloor(size) {
   shadow(40, .85, rect(0, -.2, 3.9, 2.9));          // stall
   shadow(18, .7, rect(2.5, -.25, 1.1, .9, .18));    // vending machine
   shadow(18, .7, rect(3.7, .75, .95, .8, .6));      // arcade
-  shadow(14, .7, disc(-3.3, 1.55, .35));            // signpost base
-  shadow(14, .6, rect(-2.3, -.9, .7, 1.4));         // crates
+  shadow(14, .7, disc(-3.9, 1.6, .35));             // signpost base
   for (const x of [-1.1, 0, 1.1]) shadow(10, .55, disc(x, 1.38, .22)); // stools
   shadow(10, .5, rect(2.05, 1.65, .7, .45, .35));   // menu board
-  shadow(12, .5, rect(3.95, 2.15, .9, .5, .5));     // training easel
   shadow(10, .5, disc(2.15, .8, .22));              // plant
-  shadow(14, .6, rect(2.3, -1.2, .9, .6));          // bin bags
 
   // Grade: pull saturation down a little and lift it, for the dusty, warm look.
   const img = ctx.getImageData(0, 0, N, N), d = img.data;
@@ -513,6 +510,8 @@ export function sunsetTV() {
       const y = 270 + i * 7, w = (60 - i * 2) * (1 + .25 * Math.sin(t * 3 + i));
       ctx.fillRect(420 - w / 2 + Math.sin(t * 2 + i) * 8, y, w, 2);
     }
+    ctx.fillStyle = 'rgba(10,6,20,.55)'; ctx.fillRect(18, 18, 210, 46);
+    ctx.fillStyle = '#fff'; ctx.font = `20px ${FONT_PIXEL}`; ctx.textBaseline = 'middle'; ctx.fillText('▶ TRAINING', 30, 42);
     ctx.fillStyle = 'rgba(0,0,0,.18)';
     for (let y = 0; y < 400; y += 4) ctx.fillRect(0, y, 640, 1);
   }, 12);
