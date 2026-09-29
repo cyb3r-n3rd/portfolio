@@ -11,6 +11,7 @@ export const SECTIONS = [
   { id: 'projects', label: 'projects', color: '#ff4fa3', dir: 'right' },
   { id: 'research', label: 'research', color: '#b6ff3b', dir: 'left' },
   { id: 'about', label: 'about me', color: '#2af3ff', dir: 'right' },
+  { id: 'training', label: 'training', color: '#a98bff', dir: 'right' },
   { id: 'contact', label: 'contact', color: '#ffb020', dir: 'left' },
 ];
 
@@ -72,6 +73,7 @@ export function buildWorld(scene, renderer) {
   buildArcade(root, updaters, clickables, screens);
   buildTV(root, updaters, clickables, screens);
   buildSignpost(root, updaters, clickables);
+  IN.trainingEasel(root, updaters, clickables, screens, G);
   buildProps(root, updaters);
   IN.groundText(root, profile.name, profile.roles, updaters);
   IN.ledTicker(root, updaters, [['XSS', '1337.00', 1], ['SQLI', '404.04', 0], ['RCE', '9.8', 1], ['IDOR', '101.10', 1], ['CHAI', '10.00', 1], ['SSRF', '169.25', 0], ['BUGS', '99+', 1], ['CVE', '2022', 1]]);
@@ -480,15 +482,13 @@ function buildSignpost(root, updaters, clickables) {
   // Twin globe lamps
   g.add(rbox(1.4, .07, .07, post, 0, 4.25, 0, .03));
   const globes = [];
-  [[-.62, '#ffa3ea'], [.62, '#fff2e6']].forEach(([x, col]) => {
+  [[-.62, '#ff5fd0'], [.62, '#ff9ae6']].forEach(([x, col]) => {
     g.add(cyl(.05, .07, .12, post, x, 4.18, 0, 12));
-    const globe = new THREE.Mesh(new THREE.SphereGeometry(.3, 32, 20), glow(col, 2.4));
+    const globe = new THREE.Mesh(new THREE.SphereGeometry(.3, 48, 32), IN.globeMaterial(col));
     globe.position.set(x, 3.9, 0);
     g.add(globe);
     globes.push(globe);
   });
-  // Soft halos: the big bloom around the globes, even without post-processing.
-  globes.forEach((gl, i) => { const h = IN.halo(i ? '#ffe6f4' : '#ff8fe0', 1.9, .85); h.position.copy(gl.position); g.add(h); });
   // Mast above the cross-arm with a cyan tip, and a bar of little LEDs
   g.add(cyl(.03, .04, .9, post, 0, 4.7, 0, 10));
   const tip = new THREE.Mesh(new THREE.SphereGeometry(.045, 12, 8), glow('#5ff6ff', 2.5));
@@ -580,8 +580,8 @@ function buildProps(root, updaters) {
     const front = rbox(.05, 1.0, .05, frameMat, x, .5, .02, .02); front.rotation.x = -.16; menu.add(front);
     const back = rbox(.05, 1.0, .05, frameMat, x, .5, -.3, .02); back.rotation.x = .2; menu.add(back);
   }
-  menu.position.set(-2.2, G, .55);
-  menu.rotation.y = .95;
+  menu.position.set(2.05, G, 1.75);
+  menu.rotation.y = -.35;
   root.add(menu);
 
   // Crates
@@ -611,7 +611,7 @@ function buildProps(root, updaters) {
     l.rotation.set(Math.sin(a) * .5, a, Math.cos(a) * .5);
     plant.add(l);
   }
-  plant.position.set(1.95, G, 1.6);
+  plant.position.set(2.15, G, .8);
   root.add(plant);
 
   // Traffic cone

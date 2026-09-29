@@ -270,23 +270,27 @@ export function bakedFloor(size) {
   const N = 1024, k = N / size;
   const [c, ctx] = canvas(N, N);
   const X = (x) => (x + size / 2) * k, Z = (z) => (z + size / 2) * k;
-  ctx.fillStyle = '#050407'; ctx.fillRect(0, 0, N, N);
+  ctx.fillStyle = '#0c0910'; ctx.fillRect(0, 0, N, N);
 
-  // Light pools, added on top of each other like real light.
-  ctx.globalCompositeOperation = 'lighter';
-  const pool = (x, z, r, rgb, a) => {
+  // Light pools, painted with colours sampled from the reference look: dusty,
+  // warm mauve in the middle, magenta under the lamps, teal by the machines.
+  const pool = (x, z, r, hex, a, soft = .5) => {
+    const [R, G2, B] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
     const g = ctx.createRadialGradient(X(x), Z(z), 0, X(x), Z(z), r * k);
-    g.addColorStop(0, `rgba(${rgb},${a})`);
-    g.addColorStop(.45, `rgba(${rgb},${a * .45})`);
-    g.addColorStop(1, `rgba(${rgb},0)`);
+    g.addColorStop(0, `rgba(${R},${G2},${B},${a})`);
+    g.addColorStop(soft, `rgba(${R},${G2},${B},${a * .6})`);
+    g.addColorStop(1, `rgba(${R},${G2},${B},0)`);
     ctx.fillStyle = g; ctx.fillRect(0, 0, N, N);
   };
-  pool(0, 1.2, 10, '88,46,138', .7);      // broad violet wash
-  pool(-3.3, 1.6, 6, '185,50,145', .55);  // pink lamps
-  pool(-3.3, 1.8, 1.8, '255,190,235', .35);
-  pool(3.4, .6, 5.5, '28,150,165', .7);    // teal machines
-  pool(0, 1.6, 2.6, '255,150,70', .35);    // warm spill from the counter
-  pool(1, -2.6, 2.6, '255,190,120', .2);   // back door lamp
+  pool(0, 2.5, 13, '#2a1c33', 1, .6);        // faint base glow so the floor reads to the horizon
+  pool(-.5, 3, 8, '#614863', .95, .55);      // warm mauve under the name
+  pool(.6, 2.8, 6, '#8c5058', 1, .55);       // warm rose at the front
+  pool(3.8, .8, 6.5, '#1a6676', .95, .5);    // teal by the machines
+  pool(3.6, 2.4, 3.5, '#1f6372', .7, .5);
+  pool(-3.3, 2.8, 4.2, '#673f81', .85, .5);  // violet front-left
+  pool(-3.4, 1.7, 3.3, '#a0449e', 1, .5);    // magenta under the lamp
+  pool(0, 1.4, 2.2, '#b0704f', .35, .5);     // warm spill from the counter
+  pool(1, -2.6, 2.6, '#8a6a52', .3);         // back door lamp
 
   // Contact shadows: draw each shape far off-canvas and keep only its blurred shadow.
   ctx.globalCompositeOperation = 'source-over';
@@ -307,13 +311,22 @@ export function bakedFloor(size) {
   shadow(14, .7, disc(-3.3, 1.55, .35));            // signpost base
   shadow(14, .6, rect(-2.3, -.9, .7, 1.4));         // crates
   for (const x of [-1.1, 0, 1.1]) shadow(10, .55, disc(x, 1.38, .22)); // stools
-  shadow(10, .5, rect(-2.2, .55, .7, .45, -.95));   // menu board
-  shadow(10, .5, disc(1.95, 1.6, .22));             // plant
+  shadow(10, .5, rect(2.05, 1.65, .7, .45, .35));   // menu board
+  shadow(12, .5, rect(4.75, .45, .9, .5, .75));     // training easel
+  shadow(10, .5, disc(2.15, .8, .22));              // plant
   shadow(14, .6, rect(2.3, -1.2, .9, .6));          // bin bags
 
+  // Grade: pull saturation down a little and lift it, for the dusty, warm look.
+  const img = ctx.getImageData(0, 0, N, N), d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const l = d[i] * .3 + d[i + 1] * .59 + d[i + 2] * .11;
+    for (let j = 0; j < 3; j++) d[i + j] = Math.min(255, (l + (d[i + j] - l) * .78) * 1.12);
+  }
+  ctx.putImageData(img, 0, 0);
+
   // Fade the edges into the void.
-  const fade = ctx.createRadialGradient(N / 2, N / 2 + 1.2 * k, 5 * k, N / 2, N / 2 + 1.2 * k, 14 * k);
-  fade.addColorStop(0, 'rgba(5,4,7,0)'); fade.addColorStop(1, 'rgba(5,4,7,1)');
+  const fade = ctx.createRadialGradient(N / 2, N / 2 + 1.5 * k, 7 * k, N / 2, N / 2 + 1.5 * k, 16 * k);
+  fade.addColorStop(0, 'rgba(5,4,7,0)'); fade.addColorStop(.7, 'rgba(8,6,12,.75)'); fade.addColorStop(1, 'rgba(4,3,6,1)');
   ctx.fillStyle = fade; ctx.fillRect(0, 0, N, N);
   return toTexture(c);
 }
@@ -539,5 +552,23 @@ export function glowSprite() {
   g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.25, 'rgba(255,255,255,.55)');
   g.addColorStop(.6, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
+  return toTexture(c);
+}
+
+/** Whiteboard for the training easel (attract mode). */
+export function whiteboard(titles) {
+  const [c, ctx] = canvas(1024, 720);
+  ctx.fillStyle = '#f4f6fb'; ctx.fillRect(0, 0, 1024, 720);
+  const r = rng(17);
+  for (let i = 0; i < 40; i++) { ctx.fillStyle = `rgba(120,130,160,${r() * .06})`; ctx.fillRect(r() * 1024, r() * 720, 60 + r() * 200, 2 + r() * 6); }
+  ctx.fillStyle = '#2b2bd6'; ctx.font = `700 92px ${FONT_UI}`; ctx.fillText('TRAINING', 60, 130);
+  ctx.strokeStyle = '#e0268f'; ctx.lineWidth = 8; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(60, 160); ctx.bezierCurveTo(250, 150, 420, 172, 540, 158); ctx.stroke();
+  ctx.font = `600 44px ${FONT_UI}`;
+  titles.slice(0, 5).forEach((t, i) => {
+    ctx.fillStyle = ['#16122b', '#0f7a5c', '#16122b', '#b3261e', '#16122b'][i % 5];
+    ctx.fillText(`• ${t}`, 70, 250 + i * 86);
+  });
+  ctx.fillStyle = '#e0268f'; ctx.font = `700 34px ${FONT_UI}`; ctx.fillText('click to see sessions →', 600, 680);
   return toTexture(c);
 }

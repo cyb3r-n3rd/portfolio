@@ -2,6 +2,7 @@
 // Everything is procedural, like the rest of the scene.
 import * as THREE from 'three';
 import * as T from './textures.js';
+import { training } from './content.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const lam = (color, extra = {}) => new THREE.MeshLambertMaterial({ color, ...extra });
@@ -445,4 +446,57 @@ export function verticalBillboard(g, updaters, word) {
   g.add(b);
   const pm = pinkF.material;
   updaters.push((t) => { const on = (t % 8) > .3 || Math.sin(t * 60) > 0; pm.color.set('#ff4fcf').multiplyScalar(on ? 2.2 : .5); });
+}
+
+/** Lamp globe: white-hot core with a thin tinted rim, so the edge stays crisp. */
+export function globeMaterial(rim) {
+  return new THREE.ShaderMaterial({
+    toneMapped: false,
+    uniforms: { uRim: { value: new THREE.Color(rim) } },
+    vertexShader: `
+      varying vec3 vN; varying vec3 vV;
+      void main() {
+        vec4 mv = modelViewMatrix * vec4(position, 1.);
+        vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform vec3 uRim; varying vec3 vN; varying vec3 vV;
+      void main() {
+        float f = pow(1. - max(dot(normalize(vN), normalize(vV)), 0.), 3.);
+        vec3 c = mix(vec3(1.6, 1.55, 1.6), uRim * 1.8, f);
+        gl_FragColor = vec4(c, 1.);
+      }`,
+  });
+}
+
+// Training --------------------------------------------------------------------------------
+
+/** Whiteboard on a tripod easel: the Training screen. */
+export function trainingEasel(root, updaters, clickables, screens, G) {
+  const e = new THREE.Group();
+  const wood = lam('#8a5a3a');
+  // tripod legs
+  const leg = (x, z, rx, rz) => { const l = new THREE.Mesh(new THREE.CylinderGeometry(.025, .03, 1.9, 8), wood); l.position.set(x, .92, z); l.rotation.set(rx, 0, rz); e.add(l); };
+  leg(-.38, .05, -.08, .12); leg(.38, .05, -.08, -.12); leg(0, -.35, .35, 0);
+  e.add(new THREE.Mesh(new THREE.BoxGeometry(1.02, .05, .12), wood).translateY(.62).translateZ(.12));
+  // board
+  const board = new THREE.Group();
+  board.add(new THREE.Mesh(new THREE.BoxGeometry(1.08, .78, .05), lam('#c9ced9')));
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.0, .7), new THREE.MeshBasicMaterial({ map: T.whiteboard(training.map((t) => t.short || t.title)) }));
+  screen.material.color.setScalar(.92);
+  screen.position.z = .027;
+  board.add(screen);
+  // marker tray + markers
+  board.add(new THREE.Mesh(new THREE.BoxGeometry(.9, .03, .08), lam('#9aa1b0')).translateY(-.41).translateZ(.05));
+  ['#2b2bd6', '#e0268f', '#0f7a5c'].forEach((c, i) => board.add(new THREE.Mesh(new THREE.CylinderGeometry(.012, .012, .12, 8), lam(c)).translateX(-.3 + i * .09).translateY(-.39).translateZ(.06).rotateZ(Math.PI / 2)));
+  board.position.set(0, 1.08, .1);
+  board.rotation.x = -.12;
+  e.add(board);
+  e.position.set(4.75, G, .45);
+  e.rotation.y = -.75;
+  root.add(e);
+  screen.userData.section = 'training';
+  screens.training = screen;
+  clickables.push(screen);
 }

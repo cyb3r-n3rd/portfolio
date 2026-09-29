@@ -1,6 +1,6 @@
 // Builds the four screen interfaces from content.js.
 // main.js decides where they sit (pinned over the 3D screen, or full-window on phones).
-import { profile, skills, experience, projects, research, contact } from './content.js';
+import { profile, skills, experience, projects, research, contact, training } from './content.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -134,6 +134,24 @@ function researchPanel() {
   </section>`;
 }
 
+function trainingPanel() {
+  return `
+  <section class="panel p-board" data-screen="training" aria-label="Training">
+    <button class="back" data-back type="button">← Back</button>
+    <div class="scroll">
+      <h1>Training</h1>
+      <p class="board-sub">Sessions I run and teach</p>
+      <ol class="board-list">${training.map((t, i) => `
+        <li style="--ink:${['#2b2bd6', '#0f7a5c', '#b3261e', '#e0268f'][i % 4]}">
+          <h2>${t.link ? `<a href="${esc(t.link)}" target="_blank" rel="noopener">${esc(t.title)}</a>` : esc(t.title)}</h2>
+          <p class="board-meta">${[t.where, t.when].filter(Boolean).map(esc).join(' · ')}</p>
+          <p>${esc(t.text)}</p>
+        </li>`).join('')}
+      </ol>
+    </div>
+  </section>`;
+}
+
 function contactPanel() {
   return `
   <section class="panel p-arcade" data-screen="contact" aria-label="Contact">
@@ -152,7 +170,7 @@ function contactPanel() {
 // ---------------------------------------------------------------------------
 
 export function mountUI(root, { onBack }) {
-  root.innerHTML = aboutPanel() + projectsPanel() + researchPanel() + contactPanel();
+  root.innerHTML = aboutPanel() + projectsPanel() + researchPanel() + trainingPanel() + contactPanel();
   const panels = [...root.querySelectorAll('.panel')];
 
   root.addEventListener('click', (e) => {

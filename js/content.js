@@ -88,3 +88,11 @@ export const contact = [
   { label: 'GITHUB', value: 'cyb3r-n3rd', href: 'https://github.com/cyb3r-n3rd' },
   { label: 'RESUME', value: 'download pdf', href: 'assets/resume.pdf' },
 ];
+
+// Shown on the whiteboard easel. `short` is what's scribbled on the board in the scene.
+export const training = [
+  { when: '2023 – now', title: 'Job-readiness training for underprivileged students', short: 'Job-ready tech skills', where: 'B. and B. EduTech (volunteer)', text: 'Training underprivileged students to get job ready.', link: null },
+  { when: '', title: 'Web & API penetration testing', short: 'Web & API pentesting', where: 'Placeholder: organisation or event', text: 'Placeholder: who attended, the format (workshop, bootcamp, corporate training) and how long it ran.', link: null },
+  { when: '', title: 'Red team fundamentals', short: 'Red teaming basics', where: 'Placeholder: organisation or event', text: 'Placeholder: a line about this session.', link: null },
+  { when: '', title: 'Hardware hacking hands-on', short: 'Hardware hacking', where: 'Placeholder: organisation or event', text: 'Placeholder: a line about this session.', link: null },
+];

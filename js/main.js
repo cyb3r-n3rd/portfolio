@@ -14,7 +14,7 @@ const body = document.body;
 const canvas = $('#scene');
 const uiRoot = $('#ui');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const SECTION_IDS = ['about', 'projects', 'research', 'contact'];
+const SECTION_IDS = ['about', 'projects', 'research', 'training', 'contact'];
 
 const progress = (p, note) => {
   $('#gate-fill').style.width = `${p * 100}%`;

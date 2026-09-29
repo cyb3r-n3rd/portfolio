@@ -95,7 +95,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 /* ---------- vignette + sound ---------- */
 .vignette { position: fixed; inset: 0; z-index: 5; pointer-events: none;
-  background: radial-gradient(120% 95% at 50% 55%, transparent 55%, rgba(4, 2, 8, .55) 100%); }
+  background: radial-gradient(130% 100% at 50% 55%, transparent 65%, rgba(4, 2, 8, .3) 100%); }
 .sound {
   position: fixed; right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); z-index: 25;
   width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: rgba(255, 255, 255, .7);
@@ -255,6 +255,20 @@ body.viewing .ui { opacity: 1; visibility: visible; pointer-events: auto; }
 .tv-text { color: #8fdcb2; font-size: .85em; }
 .tv-back { margin-top: 1em; font: inherit; color: #9dffcf; }
 .tv-back:hover { color: #fff; }
+
+/* ---------- Training whiteboard ---------- */
+.p-board { background: #f4f6fb; color: #16122b; font-size: 2.9cqh; }
+.p-board .back { position: absolute; left: 4%; top: 5%; font: 700 1em var(--ui); color: #2b2bd6; z-index: 2; }
+.p-board .scroll { inset: 13% 7% 5%; }
+.p-board h1 { font: 700 2.4em/1 var(--ui); color: #2b2bd6; margin: 0; display: inline-block;
+  background: linear-gradient(transparent 82%, rgba(224, 38, 143, .5) 82%); }
+.board-sub { margin: .4em 0 1em; color: #5a5f73; font-weight: 600; }
+.board-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .9em; }
+.board-list li { border-left: .25em solid var(--ink); padding: .1em 0 .1em .8em; }
+.board-list h2 { font: 700 1.1em var(--ui); margin: 0; color: var(--ink); }
+.board-list h2 a { color: inherit; }
+.board-list p { margin: .2em 0 0; font-weight: 600; }
+.board-meta { color: #5a5f73; font-size: .85em; }
 
 /* ---------- Arcade ---------- */
 .p-arcade {
