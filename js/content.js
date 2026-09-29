@@ -13,7 +13,9 @@ export const profile = {
     'Published CVE holder and Springer Best Paper winner, with over 15,000 USD in bug bounties and Hall of Fame at the U.S. DoD and HP. I script my own tooling in Python and Bash.',
     'Thanks for stopping by the Cyber Tapri.',
   ],
-  resume: 'assets/resume.pdf',
+  // Set to 'assets/resume.pdf' (and commit the PDF) to show the Resume buttons.
+  // Off for now: the current PDF lists a phone number and C3iHub.
+  resume: null,
   socials: [
     { label: 'GitHub', icon: 'github', href: 'https://github.com/cyb3r-n3rd' },
     { label: 'LinkedIn', icon: 'linkedin', href: 'https://www.linkedin.com/in/shivamvermacyber' },
@@ -86,7 +88,6 @@ export const contact = [
   { label: 'EMAIL', value: 'v.shivam1996@gmail.com', href: 'mailto:v.shivam1996@gmail.com' },
   { label: 'LINKEDIN', value: 'shivamvermacyber', href: 'https://www.linkedin.com/in/shivamvermacyber' },
   { label: 'GITHUB', value: 'cyb3r-n3rd', href: 'https://github.com/cyb3r-n3rd' },
-  { label: 'RESUME', value: 'download pdf', href: 'assets/resume.pdf' },
 ];
 
 // Shown on the whiteboard easel. `short` is what's scribbled on the board in the scene.
