@@ -106,7 +106,7 @@ async function start() {
 
   const homeDir = () => new THREE.Vector3(aspect() < .8 ? -.25 : -.42, .33, 1).normalize();
   // On portrait, frame the signpost and shop; the arcade is a drag away.
-  const homeTarget = () => (aspect() < .8 ? new THREE.Vector3(-1.3, 2.3, .5) : new THREE.Vector3(.3, 2.15, 0));
+  const homeTarget = () => (aspect() < .8 ? new THREE.Vector3(-1.75, 2.3, .6) : new THREE.Vector3(.3, 2.15, 0));
   const homePose = () => ({
     pos: homeTarget().addScaledVector(homeDir(), homeDistance()),
     target: homeTarget(),
