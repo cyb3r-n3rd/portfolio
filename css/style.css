@@ -256,19 +256,49 @@ body.viewing .ui { opacity: 1; visibility: visible; pointer-events: auto; }
 .tv-back { margin-top: 1em; font: inherit; color: #9dffcf; }
 .tv-back:hover { color: #fff; }
 
-/* ---------- Training whiteboard ---------- */
-.p-board { background: #f4f6fb; color: #16122b; font-size: 2.9cqh; }
+/* ---------- Training whiteboard (dynamic) ---------- */
+.p-board { background:
+    radial-gradient(130% 80% at 20% 0%, #fdfdff, #eef0f7 60%, #e6e8f2);
+  color: #16122b; font-size: 2.9cqh; }
 .p-board .back { position: absolute; left: 4%; top: 5%; font: 700 1em var(--ui); color: #2b2bd6; z-index: 2; }
 .p-board .scroll { inset: 13% 7% 5%; }
-.p-board h1 { font: 700 2.4em/1 var(--ui); color: #2b2bd6; margin: 0; display: inline-block;
-  background: linear-gradient(transparent 82%, rgba(224, 38, 143, .5) 82%); }
+/* a "live" badge, like a session in progress */
+.board-live { position: absolute; right: 6%; top: 6%; z-index: 2; display: flex; align-items: center; gap: .4em;
+  font: 700 .8em var(--ui); letter-spacing: .12em; color: #b3261e; }
+.board-live i { width: .55em; height: .55em; border-radius: 50%; background: #e0263c; box-shadow: 0 0 .5em #e0263c; animation: board-pulse 1.2s ease-in-out infinite; }
+@keyframes board-pulse { 50% { opacity: .25; transform: scale(.7); } }
+.p-board h1 { font: 700 2.4em/1 var(--ui); color: #2b2bd6; margin: 0; display: inline-block; position: relative; }
+.p-board h1 span { color: #e0268f; }
+/* the marigold/pink marker underline draws itself in */
+.board-draw::after { content: ""; position: absolute; left: 0; bottom: .02em; height: .14em; width: 100%;
+  background: linear-gradient(90deg, #ff7ad1, #e0268f); border-radius: 1em; transform-origin: left;
+  transform: scaleX(0); animation: board-underline .7s .25s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes board-underline { to { transform: scaleX(1); } }
 .board-sub { margin: .4em 0 1em; color: #5a5f73; font-weight: 600; }
+/* items pop in one after another */
+.pop { opacity: 0; transform: translateY(.6em); animation: board-pop .5s var(--d, 0s) cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes board-pop { to { opacity: 1; transform: none; } }
 .board-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .9em; }
-.board-list li { border-left: .25em solid var(--ink); padding: .1em 0 .1em .8em; }
+.board-list li { border-left: .25em solid var(--ink); padding: .1em 0 .1em .8em; transition: transform .18s, background .18s; border-radius: 0 .3em .3em 0; }
+.board-list li:hover { transform: translateX(.25em); background: rgba(43, 43, 214, .05); }
 .board-list h2 { font: 700 1.1em var(--ui); margin: 0; color: var(--ink); }
-.board-list h2 a { color: inherit; }
+.board-list h2 a { color: inherit; text-decoration: none; background: linear-gradient(currentColor, currentColor) 0 100%/0 .08em no-repeat; transition: background-size .25s; }
+.board-list h2 a:hover { background-size: 100% .08em; }
 .board-list p { margin: .2em 0 0; font-weight: 600; }
 .board-meta { color: #5a5f73; font-size: .85em; }
+/* talks */
+.board-section { font: 700 1.3em var(--ui); color: #16122b; margin: 1.3em 0 .5em; }
+.talk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .55em; }
+.talk-list li { display: grid; grid-template-columns: 3.2em 1fr; gap: .8em; align-items: baseline;
+  padding: .35em .5em; border-radius: .4em; transition: background .18s; }
+.talk-list li:hover { background: rgba(224, 38, 143, .07); }
+.talk-year { font: 700 .85em var(--mono); color: #e0268f; }
+.talk-body { display: grid; }
+.talk-body a, .talk-title { font: 700 1em var(--ui); color: #2b2bd6; text-decoration: none; }
+.talk-title { color: #16122b; }
+.talk-body a { background: linear-gradient(#2b2bd6, #2b2bd6) 0 100%/0 .08em no-repeat; transition: background-size .25s; }
+.talk-body a:hover { background-size: 100% .08em; }
+.talk-event { color: #5a5f73; font-size: .85em; font-weight: 600; }
 
 /* ---------- Arcade ---------- */
 .p-arcade {

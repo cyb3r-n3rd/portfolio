@@ -45,9 +45,9 @@ export const experience = [
 export const projects = [
   { code: 'A1', name: 'Rubber Ducky', color: '#ffd23a', kind: 'can', tags: ['hardware', 'arduino', 'hid'], text: 'A USB keystroke-injection device built on an Arduino ATtiny, used in authorised red team demos.', link: 'https://github.com/cyb3r-n3rd/Rubber-Ducky' },
   { code: 'A2', name: 'P4wnP1', color: '#ff4fa3', kind: 'bottle', tags: ['hardware', 'raspberry pi', 'active directory'], text: 'A Raspberry Pi Zero USB platform for Active Directory security testing.', link: 'https://github.com/cyb3r-n3rd/P4wnP1' },
-  { code: 'A3', name: 'Pwnagotchi', color: '#b6ff3b', kind: 'can', tags: ['hardware', 'wi-fi', 'raspberry pi'], text: 'A Raspberry Pi Zero W Wi-Fi security research companion that learns from its surroundings.', link: 'https://github.com/cyb3r-n3rd' },
-  { code: 'A4', name: 'RFID Library System', color: '#2af3ff', kind: 'carton', tags: ['rfid', 'embedded'], text: 'An RFID-based library management system built for my college library; one of the college\'s best projects.', link: '#' },
-  { code: 'B1', name: 'Home Automation', color: '#8a7bff', kind: 'bottle', tags: ['iot', 'embedded'], text: 'A home automation build from 2018.', link: '#' },
+  { code: 'A3', name: 'Pwnagotchi', color: '#b6ff3b', kind: 'can', tags: ['hardware', 'wi-fi', 'raspberry pi'], text: 'A Raspberry Pi Zero W Wi-Fi handshake-capture companion for authorised wireless security learning. Build guide in the repo.', link: 'https://github.com/cyb3r-n3rd/pwnagotchi' },
+  { code: 'A4', name: 'RFID Library System', color: '#2af3ff', kind: 'carton', tags: ['rfid', 'embedded'], text: 'An RFID-based library management system built for my college library; one of the college\'s best projects.', link: 'https://github.com/cyb3r-n3rd/rfid-library-system' },
+  { code: 'B1', name: 'Home Automation', color: '#8a7bff', kind: 'bottle', tags: ['iot', 'embedded'], text: 'An ESP8266 home-automation build: switch appliances from your phone over Wi-Fi.', link: 'https://github.com/cyb3r-n3rd/home-automation' },
   { code: 'B2', name: 'Mobile Pentesting', color: '#ff6b4a', kind: 'can', tags: ['python', 'mobile', 'traffic analysis'], text: 'Scripts for analysing mobile-device traffic captured with tools like Wireshark.', link: 'https://github.com/cyb3r-n3rd/Mobile-Pentesting' },
   { code: 'B3', name: 'Bug Bounty Notes', color: '#3dffb0', kind: 'carton', tags: ['web', 'methodology'], text: 'My bug-hunting methodology notes and cheat sheets.', link: 'https://github.com/cyb3r-n3rd/Bug-Bounty-Notes' },
   { code: 'B4', name: 'Security Tooling', color: '#e9ecf5', kind: 'bottle', tags: ['python', 'bash'], text: 'Python and Bash tooling I write to speed up testing.', link: 'https://github.com/cyb3r-n3rd' },
@@ -96,4 +96,13 @@ export const training = [
   { when: '', title: 'Web & API penetration testing', short: 'Web & API pentesting', where: 'Placeholder: organisation or event', text: 'Placeholder: who attended, the format (workshop, bootcamp, corporate training) and how long it ran.', link: null },
   { when: '', title: 'Red team fundamentals', short: 'Red teaming basics', where: 'Placeholder: organisation or event', text: 'Placeholder: a line about this session.', link: null },
   { when: '', title: 'Hardware hacking hands-on', short: 'Hardware hacking', where: 'Placeholder: organisation or event', text: 'Placeholder: a line about this session.', link: null },
+];
+
+// Shown on the Training screen under "Talks". Fill title/event/year/link per talk.
+// Any item with link:null shows as plain text (no hyperlink) until a URL is added.
+export const talks = [
+  { year: '2026', title: 'Placeholder talk title', event: 'Placeholder conference / event', link: null },
+  { year: '2025', title: 'Placeholder talk title', event: 'Placeholder conference / event', link: null },
+  { year: '2025', title: 'Placeholder talk title', event: 'Placeholder meetup / webinar', link: null },
+  { year: '2024', title: 'Placeholder talk title', event: 'Placeholder conference / event', link: null },
 ];

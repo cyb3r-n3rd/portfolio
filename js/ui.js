@@ -1,6 +1,6 @@
 // Builds the four screen interfaces from content.js.
 // main.js decides where they sit (pinned over the 3D screen, or full-window on phones).
-import { profile, skills, experience, projects, research, contact, training } from './content.js';
+import { profile, skills, experience, projects, research, contact, training, talks } from './content.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -136,18 +136,29 @@ function researchPanel() {
 
 function trainingPanel() {
   return `
-  <section class="panel p-board" data-screen="training" aria-label="Training">
+  <section class="panel p-board" data-screen="training" aria-label="Training &amp; talks">
     <button class="back" data-back type="button">← Back</button>
+    <span class="board-live"><i></i>LIVE</span>
     <div class="scroll">
-      <h1>Training</h1>
-      <p class="board-sub">Sessions I run and teach</p>
+      <h1 class="board-draw">Training <span>&amp; Talks</span></h1>
+      <p class="board-sub">Sessions I run, and talks I've given</p>
       <ol class="board-list">${training.map((t, i) => `
-        <li style="--ink:${['#2b2bd6', '#0f7a5c', '#b3261e', '#e0268f'][i % 4]}">
-          <h2>${t.link ? `<a href="${esc(t.link)}" target="_blank" rel="noopener">${esc(t.title)}</a>` : esc(t.title)}</h2>
+        <li class="pop" style="--ink:${['#2b2bd6', '#0f7a5c', '#b3261e', '#e0268f'][i % 4]};--d:${i * 0.08}s">
+          <h2>${t.link ? `<a href="${esc(t.link)}" target="_blank" rel="noopener">${esc(t.title)} ↗</a>` : esc(t.title)}</h2>
           <p class="board-meta">${[t.where, t.when].filter(Boolean).map(esc).join(' · ')}</p>
           <p>${esc(t.text)}</p>
         </li>`).join('')}
       </ol>
+      <h2 class="board-section">🎤 Talks</h2>
+      <ul class="talk-list">${talks.map((t, i) => `
+        <li class="pop" style="--d:${(i + training.length) * 0.08}s">
+          <span class="talk-year">${esc(t.year)}</span>
+          <span class="talk-body">
+            ${t.link ? `<a href="${esc(t.link)}" target="_blank" rel="noopener">${esc(t.title)} ↗</a>` : `<span class="talk-title">${esc(t.title)}</span>`}
+            <span class="talk-event">${esc(t.event)}</span>
+          </span>
+        </li>`).join('')}
+      </ul>
     </div>
   </section>`;
 }
