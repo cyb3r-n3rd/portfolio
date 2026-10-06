@@ -88,6 +88,7 @@ export const contact = [
   { label: 'EMAIL', value: 'v.shivam1996@gmail.com', href: 'mailto:v.shivam1996@gmail.com' },
   { label: 'LINKEDIN', value: 'shivamvermacyber', href: 'https://www.linkedin.com/in/shivamvermacyber' },
   { label: 'GITHUB', value: 'cyb3r-n3rd', href: 'https://github.com/cyb3r-n3rd' },
+  { label: 'BASED IN', value: 'India · open to relocation · remote worldwide 🌐', href: null },
 ];
 
 // Shown on the whiteboard easel. `short` is what's scribbled on the board in the scene.
@@ -105,4 +106,15 @@ export const talks = [
   { year: '2025', title: 'Placeholder talk title', event: 'Placeholder conference / event', link: null },
   { year: '2025', title: 'Placeholder talk title', event: 'Placeholder meetup / webinar', link: null },
   { year: '2024', title: 'Placeholder talk title', event: 'Placeholder conference / event', link: null },
+];
+
+// Shown on the stall's MENU board → "Menu of Services".
+// Framed as availability, not a paid shingle (see note). Edit freely.
+export const services = [
+  { name: 'Web & API Penetration Testing', note: 'Pre/post-login, OWASP Top 10, business-logic, auth', tag: 'fixed scope' },
+  { name: 'Red Team Engagements', note: 'Attacker-style, chained findings, full attack path + fixes', tag: 'scoped' },
+  { name: 'VAPT', note: 'Network, infrastructure and ICS / SCADA targets', tag: 'per engagement' },
+  { name: 'Mobile Security Testing', note: 'Android, Frida, MobSF, traffic analysis', tag: 'fixed scope' },
+  { name: 'Security Training & Workshops', note: 'Hands-on sessions for teams or students', tag: 'per workshop' },
+  { name: 'Vulnerability Disclosure & Advisory', note: 'CVE-grade findings with remediation guidance', tag: 'advisory' },
 ];

@@ -354,3 +354,35 @@ body.viewing .ui { opacity: 1; visibility: visible; pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* ---------- Services: "Menu of Services" (café menu) ---------- */
+.p-menu {
+  background:
+    radial-gradient(120% 90% at 50% 0%, #241a12, #16100a 70%),
+    #16100a;
+  color: #f3e9d6; font-size: 2.8cqh;
+}
+.p-menu .menu-back { position: absolute; left: 4%; top: 5%; z-index: 2; color: #ffcf7a; font: 700 1em var(--ui); }
+.p-menu .scroll { inset: 11% 8% 5%; }
+.menu-head { text-align: center; border-bottom: 2px dashed rgba(255, 207, 122, .35); padding-bottom: .7em; margin-bottom: .9em; }
+.menu-kicker { margin: 0; font: 700 .75em var(--mono); letter-spacing: .25em; text-transform: uppercase; color: #c99a5b; }
+.p-menu h1 { font: 700 2.5em/1 var(--ui); margin: .15em 0; color: #ffcf7a;
+  text-shadow: 0 0 .5em rgba(255, 176, 32, .35); }
+.menu-sub { margin: 0; color: #c7b79a; font-weight: 600; font-size: .9em; }
+.menu-items { list-style: none; margin: 0; padding: 0; display: grid; gap: .55em; }
+.menu-items li { display: grid; grid-template-columns: 1.6em 1fr auto; gap: .6em; align-items: baseline;
+  padding: .45em .2em; position: relative; }
+/* dotted leader between name and price, like a real menu */
+.menu-items li + li { border-top: 1px dotted rgba(255, 207, 122, .18); }
+.mi-dot { font-size: 1.1em; }
+.mi-main { display: grid; }
+.mi-name { font: 700 1.05em var(--ui); color: #f7edda; }
+.mi-note { color: #b6a582; font-size: .82em; font-weight: 600; }
+.mi-tag { font: 700 .8em var(--mono); color: #7fe0b0; white-space: nowrap; align-self: center;
+  border: 1px solid rgba(127, 224, 176, .4); border-radius: 1em; padding: .15em .7em; }
+.menu-foot { display: flex; flex-wrap: wrap; gap: .8em; align-items: center; justify-content: space-between;
+  margin-top: 1.2em; padding-top: .8em; border-top: 2px dashed rgba(255, 207, 122, .35); }
+.menu-foot span { color: #c7b79a; font-weight: 600; }
+.menu-cta { font: 700 1em var(--ui); color: #16100a; background: linear-gradient(#ffd98a, #ffb020);
+  padding: .5em 1.1em; border-radius: .6em; transition: filter .2s, transform .2s; }
+.menu-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }

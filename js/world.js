@@ -73,7 +73,7 @@ export function buildWorld(scene, renderer) {
   buildArcade(root, updaters, clickables, screens);
   buildTV(root, updaters, clickables, screens);
   buildSignpost(root, updaters, clickables);
-  buildProps(root, updaters);
+  buildProps(root, updaters, clickables, screens);
   IN.groundText(root, profile.name, profile.roles, updaters);
 
 
@@ -274,6 +274,7 @@ function buildRoof(root, updaters, clickables, screens) {
   g.add(holo);
   IN.hologram(holo, updaters);
   IN.rooftopTV(g, updaters, clickables, screens); // doubles as the Training screen
+  IN.neonGlobe(g, updaters); // global-reach prop
 
   // Pipes down the side wall
   const pipe = std('#8d97b5', .4, .6);
@@ -517,12 +518,15 @@ function buildSignpost(root, updaters, clickables) {
 
 // Props ---------------------------------------------------------------------------
 
-function buildProps(root, updaters) {
+function buildProps(root, updaters, clickables, screens) {
   // Chalkboard A-frame
   const menu = new THREE.Group();
   const menuTex = T.menuBoard();
   const board = rbox(.62, .92, .04, std('#ffffff', .9, 0, { map: menuTex, emissiveMap: menuTex, emissive: '#ffffff', emissiveIntensity: .25 }), 0, .58, .05, .01);
   board.rotation.x = -.16;
+  board.userData.section = 'services';
+  screens.services = board;
+  clickables.push(board);
   menu.add(board);
   const frameMat = std('#8a4b2a', .7);
   for (const x of [-.33, .33]) {

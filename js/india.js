@@ -505,3 +505,53 @@ export function trainingEasel(root, updaters, clickables, screens, G) {
   screens.training = screen;
   clickables.push(screen);
 }
+
+// Global reach -----------------------------------------------------------------------------
+
+/** Rotating neon wireframe globe with glowing "reach" nodes and arcs. */
+export function neonGlobe(parent, updaters, { radius = 0.42 } = {}) {
+  const g = new THREE.Group();
+
+  // Wireframe sphere (latitude + longitude) in cyan neon.
+  const wire = new THREE.LineSegments(
+    new THREE.WireframeGeometry(new THREE.SphereGeometry(radius, 16, 12)),
+    new THREE.LineBasicMaterial({ color: new THREE.Color('#2af3ff').multiplyScalar(1.6), transparent: true, opacity: .55, toneMapped: false }),
+  );
+  g.add(wire);
+  // Faint inner fill so it reads as a solid orb, not just lines.
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(radius * .97, 24, 18),
+    new THREE.MeshBasicMaterial({ color: '#0a2a44', transparent: true, opacity: .5, toneMapped: false })));
+
+  // "Reach" nodes on the surface (roughly: India, US, UK, Vietnam) + glowing arcs between them.
+  const toXYZ = (latDeg, lonDeg, r = radius) => {
+    const la = latDeg * Math.PI / 180, lo = lonDeg * Math.PI / 180;
+    return V(r * Math.cos(la) * Math.cos(lo), r * Math.sin(la), r * Math.cos(la) * Math.sin(lo));
+  };
+  const spots = [[21, 78, '#ffb020'], [38, -97, '#ff4fcf'], [54, -2, '#b6ff3b'], [16, 108, '#2af3ff']];
+  const nodes = spots.map(([la, lo, c]) => {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(.028, 12, 10), glow(c, 2.4));
+    m.position.copy(toXYZ(la, lo));
+    g.add(m);
+    return m;
+  });
+  // Arcs from India to each other node, bowed out above the surface.
+  const home = toXYZ(21, 78);
+  for (let i = 1; i < spots.length; i++) {
+    const end = toXYZ(spots[i][0], spots[i][1]);
+    const mid = home.clone().add(end).multiplyScalar(.5).normalize().multiplyScalar(radius * 1.35);
+    const curve = new THREE.QuadraticBezierCurve3(home, mid, end);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, .008, 6), glow(spots[i][2], 2)));
+  }
+
+  // Little stand so it sits on the roof.
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(.03, .06, .18, 12), lam('#2a2240')).translateY(-radius - .12));
+  g.add(new THREE.Mesh(new THREE.TorusGeometry(radius + .05, .012, 8, 36), glow('#ff4fcf', 1.8)).rotateX(Math.PI / 2));
+
+  g.position.set(-1.25, radius + .32, -.7);
+  parent.add(g);
+  updaters.push((t, dt) => {
+    g.rotation.y += dt * .4;
+    nodes.forEach((n, i) => n.scale.setScalar(1 + Math.sin(t * 3 + i * 1.7) * .25));
+  });
+  return g;
+}

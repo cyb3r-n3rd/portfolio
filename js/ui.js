@@ -1,6 +1,6 @@
 // Builds the four screen interfaces from content.js.
 // main.js decides where they sit (pinned over the 3D screen, or full-window on phones).
-import { profile, skills, experience, projects, research, contact, training, talks } from './content.js';
+import { profile, skills, experience, projects, research, contact, training, talks, services } from './content.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -163,6 +163,34 @@ function trainingPanel() {
   </section>`;
 }
 
+function servicesPanel() {
+  return `
+  <section class="panel p-menu" data-screen="services" aria-label="Services">
+    <button class="back menu-back" data-back type="button">← Back</button>
+    <div class="scroll">
+      <div class="menu-head">
+        <p class="menu-kicker">cyber tapri · est. 2020</p>
+        <h1>Menu of Services</h1>
+        <p class="menu-sub">Offensive security, served fresh. Available for engagements — remote worldwide.</p>
+      </div>
+      <ol class="menu-items">${services.map((s, i) => `
+        <li class="pop" style="--d:${i * 0.07}s">
+          <span class="mi-dot">${['☕', '🌶️', '🔥', '📱', '🎓', '🛡️'][i % 6]}</span>
+          <span class="mi-main">
+            <span class="mi-name">${esc(s.name)}</span>
+            <span class="mi-note">${esc(s.note)}</span>
+          </span>
+          <span class="mi-tag">${esc(s.tag)}</span>
+        </li>`).join('')}
+      </ol>
+      <div class="menu-foot">
+        <span>Custom scope? Let's talk.</span>
+        <button type="button" class="menu-cta" data-goto="contact">Request a quote →</button>
+      </div>
+    </div>
+  </section>`;
+}
+
 function contactPanel() {
   return `
   <section class="panel p-arcade" data-screen="contact" aria-label="Contact">
@@ -180,13 +208,16 @@ function contactPanel() {
 
 // ---------------------------------------------------------------------------
 
-export function mountUI(root, { onBack }) {
-  root.innerHTML = aboutPanel() + projectsPanel() + researchPanel() + trainingPanel() + contactPanel();
+export function mountUI(root, { onBack, onGoto }) {
+  root.innerHTML = aboutPanel() + projectsPanel() + researchPanel() + trainingPanel() + servicesPanel() + contactPanel();
   const panels = [...root.querySelectorAll('.panel')];
 
   root.addEventListener('click', (e) => {
     const back = e.target.closest('[data-back]');
     if (back) { onBack(); return; }
+
+    const goto = e.target.closest('[data-goto]');
+    if (goto) { onGoto && onGoto(goto.dataset.goto); return; }
 
     const tab = e.target.closest('[data-tab]');
     if (tab) {

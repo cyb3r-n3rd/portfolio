@@ -14,7 +14,7 @@ const body = document.body;
 const canvas = $('#scene');
 const uiRoot = $('#ui');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const SECTION_IDS = ['about', 'projects', 'research', 'training', 'contact'];
+const SECTION_IDS = ['about', 'projects', 'research', 'training', 'services', 'contact'];
 
 const progress = (p, note) => {
   $('#gate-fill').style.width = `${p * 100}%`;
@@ -41,7 +41,7 @@ else goFlat();
 
 function goFlat() {
   root.classList.add('flat');
-  const ui = mountUI(uiRoot, { onBack() {} });
+  const ui = mountUI(uiRoot, { onBack() {}, onGoto(id) { uiRoot.querySelector(`[data-screen="${id}"]`)?.scrollIntoView({ behavior: 'smooth' }); } });
   uiRoot.querySelectorAll('.panel').forEach((p) => p.classList.add('active'));
   document.querySelectorAll('[data-open]').forEach((a) => a.addEventListener('click', (e) => {
     e.preventDefault();
@@ -131,7 +131,7 @@ async function start() {
   let tween = null;
   let pending = SECTION_IDS.includes(location.hash.slice(1)) ? location.hash.slice(1) : null;
 
-  const ui = mountUI(uiRoot, { onBack: () => close() });
+  const ui = mountUI(uiRoot, { onBack: () => close(), onGoto: (id) => open(id) });
   const ease = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
   function flyTo(pose, duration, done) {
