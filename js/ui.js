@@ -150,7 +150,7 @@ function trainingPanel() {
         </li>`).join('')}
       </ol>
       <h2 class="board-section">🎤 Talks</h2>
-      <ul class="talk-list">${talks.map((t, i) => `
+      ${talks.length ? `<ul class="talk-list">${talks.map((t, i) => `
         <li class="pop" style="--d:${(i + training.length) * 0.08}s">
           <span class="talk-year">${esc(t.year)}</span>
           <span class="talk-body">
@@ -158,7 +158,7 @@ function trainingPanel() {
             <span class="talk-event">${esc(t.event)}</span>
           </span>
         </li>`).join('')}
-      </ul>
+      </ul>` : `<p class="talk-empty">I've given security talks across conferences, meetups and corporate sessions over the past 4+ years. Selected talks &amp; recordings available on request — <button type="button" class="link-btn" data-goto="contact">get in touch</button>.</p>`}
     </div>
   </section>`;
 }

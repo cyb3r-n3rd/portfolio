@@ -295,11 +295,11 @@ export function hologram(g, updaters, { count = 1400, height = 1.7, color = '#5f
   return pts;
 }
 
-/** Rooftop TV playing a sunset, on two legs. */
+/** Rooftop TV playing the Training attract screen, on two legs. */
 export function rooftopTV(g, updaters, clickables, screens) {
   const tv = new THREE.Group();
   tv.add(new THREE.Mesh(new THREE.BoxGeometry(1.16, .74, .08), lam('#1d1a26')));
-  const tex = T.sunsetTV();
+  const tex = T.trainingTV();
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.06, .64), new THREE.MeshBasicMaterial({ map: tex.texture, toneMapped: false }));
   screen.position.z = .041;
   tv.add(screen);

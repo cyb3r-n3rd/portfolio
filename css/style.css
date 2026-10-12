@@ -386,3 +386,8 @@ body.viewing .ui { opacity: 1; visibility: visible; pointer-events: auto; }
 .menu-cta { font: 700 1em var(--ui); color: #16100a; background: linear-gradient(#ffd98a, #ffb020);
   padding: .5em 1.1em; border-radius: .6em; transition: filter .2s, transform .2s; }
 .menu-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* talks empty-state + inline link button */
+.talk-empty { margin: .3em 0 0; color: #5a5f73; font-weight: 600; max-width: 40em; }
+.link-btn { font: inherit; font-weight: 700; color: #2b2bd6; text-decoration: underline; text-underline-offset: 2px; padding: 0; }
+.link-btn:hover { color: #e0268f; }

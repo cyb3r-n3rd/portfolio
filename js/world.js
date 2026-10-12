@@ -267,7 +267,7 @@ function buildRoof(root, updaters, clickables, screens) {
   g.add(rbox(3.9, .2, 2.75, roofMat, 0, .1, -.18, .05));
   g.add(rbox(3.9, .12, .12, std('#ff4fa3', .45), 0, .26, 1.14, .03));
 
-  // Rooftop: neon chai glass wrapped in a holographic swirl, a sunset TV and a solar panel
+  // Rooftop: neon chai glass with a holographic swirl, the Training TV and the globe
   IN.chaiNeon(g, updaters);
   const holo = new THREE.Group();
   holo.position.set(.95, .75, .4);

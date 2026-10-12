@@ -13,9 +13,7 @@ export const profile = {
     'Published CVE holder and Springer Best Paper winner, with over 15,000 USD in bug bounties and Hall of Fame at the U.S. DoD and HP. I script my own tooling in Python and Bash.',
     'Thanks for stopping by the Cyber Tapri.',
   ],
-  // Set to 'assets/resume.pdf' (and commit the PDF) to show the Resume buttons.
-  // Off for now: the current PDF lists a phone number and C3iHub.
-  resume: null,
+  resume: 'assets/resume.pdf',
   socials: [
     { label: 'GitHub', icon: 'github', href: 'https://github.com/cyb3r-n3rd' },
     { label: 'LinkedIn', icon: 'linkedin', href: 'https://www.linkedin.com/in/shivamvermacyber' },
@@ -88,24 +86,23 @@ export const contact = [
   { label: 'EMAIL', value: 'v.shivam1996@gmail.com', href: 'mailto:v.shivam1996@gmail.com' },
   { label: 'LINKEDIN', value: 'shivamvermacyber', href: 'https://www.linkedin.com/in/shivamvermacyber' },
   { label: 'GITHUB', value: 'cyb3r-n3rd', href: 'https://github.com/cyb3r-n3rd' },
+  { label: 'RESUME', value: 'download PDF ↓', href: 'assets/resume.pdf' },
   { label: 'BASED IN', value: 'India · open to relocation · remote worldwide 🌐', href: null },
 ];
 
 // Shown on the whiteboard easel. `short` is what's scribbled on the board in the scene.
 export const training = [
   { when: '2023 – now', title: 'Job-readiness training for underprivileged students', short: 'Job-ready tech skills', where: 'B. and B. EduTech (volunteer)', text: 'Training underprivileged students to get job ready.', link: null },
-  { when: '', title: 'Web & API penetration testing', short: 'Web & API pentesting', where: 'Placeholder: organisation or event', text: 'Placeholder: who attended, the format (workshop, bootcamp, corporate training) and how long it ran.', link: null },
-  { when: '', title: 'Red team fundamentals', short: 'Red teaming basics', where: 'Placeholder: organisation or event', text: 'Placeholder: a line about this session.', link: null },
-  { when: '', title: 'Hardware hacking hands-on', short: 'Hardware hacking', where: 'Placeholder: organisation or event', text: 'Placeholder: a line about this session.', link: null },
+  { when: '', title: 'Web & API Penetration Testing', short: 'Web & API pentesting', where: 'Hands-on workshop', text: 'Practical web and API exploitation for teams and students — OWASP Top 10, auth and business-logic flaws, live labs.', link: null },
+  { when: '', title: 'Red Team Fundamentals', short: 'Red teaming basics', where: 'Workshop', text: 'How attackers chain findings into a full attack path, and how defenders break the chain.', link: null },
+  { when: '', title: 'Hardware Hacking Hands-on', short: 'Hardware hacking', where: 'Lab session', text: 'Building and using HID / Wi-Fi security gadgets (Rubber Ducky, Pwnagotchi, P4wnP1) in a controlled lab.', link: null },
 ];
 
 // Shown on the Training screen under "Talks". Fill title/event/year/link per talk.
 // Any item with link:null shows as plain text (no hyperlink) until a URL is added.
 export const talks = [
-  { year: '2026', title: 'Placeholder talk title', event: 'Placeholder conference / event', link: null },
-  { year: '2025', title: 'Placeholder talk title', event: 'Placeholder conference / event', link: null },
-  { year: '2025', title: 'Placeholder talk title', event: 'Placeholder meetup / webinar', link: null },
-  { year: '2024', title: 'Placeholder talk title', event: 'Placeholder conference / event', link: null },
+  // Add real talks here: { year, title, event, link }. While empty, the Talks
+  // section shows an "available on request" note instead of placeholder rows.
 ];
 
 // Shown on the stall's MENU board → "Menu of Services".

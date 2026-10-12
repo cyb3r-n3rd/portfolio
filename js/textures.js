@@ -571,3 +571,39 @@ export function whiteboard(titles) {
   ctx.fillStyle = '#e0268f'; ctx.font = `700 34px ${FONT_UI}`; ctx.fillText('click to see sessions →', 600, 680);
   return toTexture(c);
 }
+
+/** Rooftop TV attract screen for Training — animated, no sun. */
+export function trainingTV() {
+  const topics = ['Web & API Pentesting', 'Red Team Fundamentals', 'Hardware Hacking', 'Bug Bounty & Recon', 'Mobile Security'];
+  return animated(640, 400, (ctx, t, f) => {
+    // dark "projector" gradient
+    const g = ctx.createRadialGradient(320, 150, 20, 320, 200, 420);
+    g.addColorStop(0, '#132a2a'); g.addColorStop(1, '#06100f');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 640, 400);
+    // header
+    ctx.fillStyle = '#2bff88'; ctx.shadowColor = '#2bff88'; ctx.shadowBlur = 14;
+    ctx.font = `30px ${FONT_PIXEL}`; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('> TRAINING', 40, 70);
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(43,255,136,.4)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(40, 86); ctx.lineTo(600, 86); ctx.stroke();
+    // rotating topic list, current one highlighted
+    const cur = Math.floor(t / 1.6) % topics.length;
+    ctx.font = `500 30px ${FONT_MONO}`;
+    topics.forEach((topic, i) => {
+      const on = i === cur;
+      ctx.fillStyle = on ? '#eaffc4' : 'rgba(157,255,207,.5)';
+      ctx.fillText(`${on ? '▶' : '·'} ${topic}`, 56, 150 + i * 46);
+    });
+    // scanning bar sweeping down
+    const y = 110 + ((t * 80) % 280);
+    ctx.fillStyle = 'rgba(43,255,136,.10)'; ctx.fillRect(0, y, 640, 26);
+    // footer with blinking cursor
+    ctx.fillStyle = '#9dffcf'; ctx.font = `20px ${FONT_MONO}`;
+    ctx.fillText('sessions & talks — click the sign', 56, 388);
+    if ((f >> 2) % 2) { ctx.fillRect(560, 370, 14, 20); }
+    // scanlines
+    ctx.fillStyle = 'rgba(0,0,0,.22)';
+    for (let sy = 0; sy < 400; sy += 4) ctx.fillRect(0, sy, 640, 2);
+  }, 10);
+}
